@@ -1,0 +1,10 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "outFile": "index.js",
+        "sourceMap": true
+    },
+    "include": [
+        "ts/**/*"
+    ]
+}
