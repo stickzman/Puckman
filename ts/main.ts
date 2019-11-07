@@ -21,7 +21,7 @@ window.addEventListener("keydown", (e) => {
 })
 
 function draw() {
-    c.fillStyle = "black"
+    c.fillStyle = "blue"
     c.fillRect(0, 0, canvas.width, canvas.height)
 
     player.update()

@@ -61,7 +61,7 @@ class TileMap {
             row.forEach((tile, tileI) => {
                 if (!tile) return
 
-                ctx.fillStyle = "grey"
+                ctx.fillStyle = "black"
                 ctx.fillRect(tileI * TILE_SIZE, tileJ * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                 ctx.fillStyle = "white"
                 if (tile === 2) {

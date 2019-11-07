@@ -7,12 +7,11 @@ class Player {
     tileY: number;
 
     constructor(public x = 13.5 * TILE_SIZE, public y = 26 * TILE_SIZE,
-                    private speed = 2) {
+                    private pixPerStep = 1.33) {
         this.updateTilePos()
     }
 
     update() {
-        this.move() // Update x, y pixel position
         // Update game tile x, y position
         if (this.updateTilePos()) {
             if (TileMap.getTile(this.tileX, this.tileY) > 1) {
@@ -20,7 +19,7 @@ class Player {
             }
         }
         // Check if we're at the tile's midpoint
-        if (this.x % TILE_SIZE === 0 && this.y % TILE_SIZE === 0) {
+        if (this.x % TILE_SIZE < this.pixPerStep && this.y % TILE_SIZE < this.pixPerStep) {
             // Update direction
             if (this.directionPossible(this.desiredDirection)) {
                 this.direction = this.desiredDirection
@@ -28,6 +27,7 @@ class Player {
                 this.direction = null
             }
         }
+        this.move() // Update x, y pixel position
     }
 
     private directionPossible(direction: number): boolean {
@@ -50,10 +50,10 @@ class Player {
 
     private move() {
         switch (this.direction) {
-            case dir.UP: this.y -= this.speed; break;
-            case dir.DOWN: this.y += this.speed; break;
-            case dir.LEFT: this.x -= this.speed; break;
-            case dir.RIGHT: this.x += this.speed; break;
+            case dir.UP: this.y -= this.pixPerStep; break;
+            case dir.DOWN: this.y += this.pixPerStep; break;
+            case dir.LEFT: this.x -= this.pixPerStep; break;
+            case dir.RIGHT: this.x += this.pixPerStep; break;
         }
     }
 
