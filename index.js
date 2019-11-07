@@ -1,26 +1,38 @@
 var Player = /** @class */ (function () {
-    function Player(x, y, pixPerStep) {
+    function Player(x, y, pixPerFrame) {
         if (x === void 0) { x = 13.5 * TILE_SIZE; }
         if (y === void 0) { y = 26 * TILE_SIZE; }
-        if (pixPerStep === void 0) { pixPerStep = 1.33; }
+        if (pixPerFrame === void 0) { pixPerFrame = 1.33; }
         this.x = x;
         this.y = y;
-        this.pixPerStep = pixPerStep;
+        this.pixPerFrame = pixPerFrame;
         this.debug = false;
         this.color = "yellow";
         this.direction = dir.LEFT;
         this.desiredDirection = this.direction;
+        this.frameHalt = 0;
         this.updateTilePos();
     }
     Player.prototype.update = function () {
         // Update game tile x, y position
         if (this.updateTilePos()) {
-            if (TileMap.getTile(this.tileX, this.tileY) > 1) {
+            var tile = TileMap.getTile(this.tileX, this.tileY);
+            if (tile > 1) {
+                //Don't move this frame if they ate a dot
+                if (tile === 2)
+                    this.frameHalt = 1;
+                if (tile === 3)
+                    this.frameHalt = 3;
                 TileMap.setTile(this.tileX, this.tileY, 1);
             }
         }
+        // Are they trying to move in the opposite direction?
+        if (Math.abs(this.desiredDirection - this.direction) === 2
+            && this.directionPossible(this.desiredDirection)) {
+            this.direction = this.desiredDirection;
+        }
         // Check if we're at the tile's midpoint
-        if (this.x % TILE_SIZE < this.pixPerStep && this.y % TILE_SIZE < this.pixPerStep) {
+        if (this.x % TILE_SIZE < this.pixPerFrame && this.y % TILE_SIZE < this.pixPerFrame) {
             // Update direction
             if (this.directionPossible(this.desiredDirection)) {
                 this.direction = this.desiredDirection;
@@ -29,7 +41,12 @@ var Player = /** @class */ (function () {
                 this.direction = null;
             }
         }
-        this.move(); // Update x, y pixel position
+        if (this.frameHalt > 0) {
+            this.frameHalt--;
+        }
+        else {
+            this.move(); // Update x, y pixel position
+        }
     };
     Player.prototype.directionPossible = function (direction) {
         switch (direction) {
@@ -50,16 +67,16 @@ var Player = /** @class */ (function () {
     Player.prototype.move = function () {
         switch (this.direction) {
             case dir.UP:
-                this.y -= this.pixPerStep;
+                this.y -= this.pixPerFrame;
                 break;
             case dir.DOWN:
-                this.y += this.pixPerStep;
+                this.y += this.pixPerFrame;
                 break;
             case dir.LEFT:
-                this.x -= this.pixPerStep;
+                this.x -= this.pixPerFrame;
                 break;
             case dir.RIGHT:
-                this.x += this.pixPerStep;
+                this.x += this.pixPerFrame;
                 break;
         }
     };
@@ -159,8 +176,8 @@ var TileMap = /** @class */ (function () {
 var TILE_SIZE = 16;
 var dir = {
     "UP": 0,
-    "DOWN": 1,
-    "LEFT": 2,
+    "LEFT": 1,
+    "DOWN": 2,
     "RIGHT": 3
 };
 var canvas = document.getElementById("canvas");

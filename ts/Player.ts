@@ -3,23 +3,33 @@ class Player {
     private color = "yellow"
     private direction = dir.LEFT
     desiredDirection = this.direction
-    tileX: number;
-    tileY: number;
+    tileX: number
+    tileY: number
+    private frameHalt = 0
 
     constructor(public x = 13.5 * TILE_SIZE, public y = 26 * TILE_SIZE,
-                    private pixPerStep = 1.33) {
+                    private pixPerFrame = 1.33) {
         this.updateTilePos()
     }
 
     update() {
         // Update game tile x, y position
         if (this.updateTilePos()) {
-            if (TileMap.getTile(this.tileX, this.tileY) > 1) {
+            var tile = TileMap.getTile(this.tileX, this.tileY)
+            if (tile > 1) {
+                //Don't move this frame if they ate a dot
+                if (tile === 2) this.frameHalt = 1
+                if (tile === 3) this.frameHalt = 3
                 TileMap.setTile(this.tileX, this.tileY, 1)
             }
         }
+        // Are they trying to move in the opposite direction?
+        if (Math.abs(this.desiredDirection - this.direction) === 2
+                && this.directionPossible(this.desiredDirection)) {
+            this.direction = this.desiredDirection
+        }
         // Check if we're at the tile's midpoint
-        if (this.x % TILE_SIZE < this.pixPerStep && this.y % TILE_SIZE < this.pixPerStep) {
+        if (this.x % TILE_SIZE < this.pixPerFrame && this.y % TILE_SIZE < this.pixPerFrame) {
             // Update direction
             if (this.directionPossible(this.desiredDirection)) {
                 this.direction = this.desiredDirection
@@ -27,7 +37,11 @@ class Player {
                 this.direction = null
             }
         }
-        this.move() // Update x, y pixel position
+        if (this.frameHalt > 0) {
+            this.frameHalt--
+        } else {
+            this.move() // Update x, y pixel position
+        }
     }
 
     private directionPossible(direction: number): boolean {
@@ -50,10 +64,10 @@ class Player {
 
     private move() {
         switch (this.direction) {
-            case dir.UP: this.y -= this.pixPerStep; break;
-            case dir.DOWN: this.y += this.pixPerStep; break;
-            case dir.LEFT: this.x -= this.pixPerStep; break;
-            case dir.RIGHT: this.x += this.pixPerStep; break;
+            case dir.UP: this.y -= this.pixPerFrame; break;
+            case dir.DOWN: this.y += this.pixPerFrame; break;
+            case dir.LEFT: this.x -= this.pixPerFrame; break;
+            case dir.RIGHT: this.x += this.pixPerFrame; break;
         }
     }
 
