@@ -1,38 +1,46 @@
 var Player = /** @class */ (function () {
-    function Player(x, y, pixPerFrame) {
+    function Player(x, y, speed) {
         if (x === void 0) { x = 13.5 * TILE_SIZE; }
         if (y === void 0) { y = 26 * TILE_SIZE; }
-        if (pixPerFrame === void 0) { pixPerFrame = 1.33; }
+        if (speed === void 0) { speed = 0.8; }
         this.x = x;
         this.y = y;
-        this.pixPerFrame = pixPerFrame;
-        this.debug = false;
-        this.color = "yellow";
+        this.MAX_SPEED = TILE_SIZE * 0.16;
         this.direction = dir.LEFT;
-        this.desiredDirection = this.direction;
+        this.color = "yellow";
         this.frameHalt = 0;
+        this.debug = false;
+        this.desiredDirection = this.direction;
+        this.setSpeed(speed);
         this.updateTilePos();
     }
+    Player.prototype.setSpeed = function (speed) {
+        speed = Math.min(Math.max(0, speed), 1); // Clamp speed to a percentage
+        this.pixPerFrame = speed * this.MAX_SPEED;
+    };
     Player.prototype.update = function () {
         // Update game tile x, y position
         if (this.updateTilePos()) {
             var tile = TileMap.getTile(this.tileX, this.tileY);
             if (tile > 1) {
                 //Don't move this frame if they ate a dot
+                if (--TileMap.totalDots <= 0) {
+                    console.log("You Win!!");
+                    this.direction = null;
+                }
                 if (tile === 2)
                     this.frameHalt = 1;
-                if (tile === 3)
+                else if (tile === 3)
                     this.frameHalt = 3;
                 TileMap.setTile(this.tileX, this.tileY, 1);
             }
         }
-        // Are they trying to move in the opposite direction?
-        if (Math.abs(this.desiredDirection - this.direction) === 2
-            && this.directionPossible(this.desiredDirection)) {
-            this.direction = this.desiredDirection;
-        }
         // Check if we're at the tile's midpoint
-        if (this.x % TILE_SIZE < this.pixPerFrame && this.y % TILE_SIZE < this.pixPerFrame) {
+        if ((this.x + this.pixPerFrame / 2) % TILE_SIZE < this.pixPerFrame
+            && (this.y + this.pixPerFrame / 2) % TILE_SIZE < this.pixPerFrame) {
+            // Snap to center of tile
+            this.x = this.tileX * TILE_SIZE;
+            this.y = this.tileY * TILE_SIZE;
             // Update direction
             if (this.directionPossible(this.desiredDirection)) {
                 this.direction = this.desiredDirection;
@@ -40,6 +48,11 @@ var Player = /** @class */ (function () {
             else if (!this.directionPossible(this.direction)) {
                 this.direction = null;
             }
+        }
+        else if (Math.abs(this.desiredDirection - this.direction) === 2
+            && this.directionPossible(this.desiredDirection)) {
+            // If they're trying to turn around, let them
+            this.direction = this.desiredDirection;
         }
         if (this.frameHalt > 0) {
             this.frameHalt--;
@@ -95,6 +108,10 @@ var Player = /** @class */ (function () {
 var TileMap = /** @class */ (function () {
     function TileMap() {
     }
+    TileMap.reset = function () {
+        TileMap.map = TileMap.INIT_MAP.map(function (row) { return row.slice(); });
+        TileMap.totalDots = 244;
+    };
     TileMap.toTileSize = function (x) {
         return Math.round(x / TILE_SIZE);
     };
@@ -131,7 +148,7 @@ var TileMap = /** @class */ (function () {
         });
         ctx.restore();
     };
-    TileMap.map = [
+    TileMap.INIT_MAP = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -169,6 +186,8 @@ var TileMap = /** @class */ (function () {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ];
+    TileMap.map = TileMap.INIT_MAP.map(function (row) { return row.slice(); });
+    TileMap.totalDots = 244;
     return TileMap;
 }());
 /// <reference path="TileMap.ts" />

@@ -1,15 +1,23 @@
 class Player {
-    debug = false
-    private color = "yellow"
+    private readonly MAX_SPEED = TILE_SIZE * 0.16
     private direction = dir.LEFT
+    private color = "yellow"
+    private frameHalt = 0
+    private pixPerFrame: number
+
+    debug = false
     desiredDirection = this.direction
     tileX: number
     tileY: number
-    private frameHalt = 0
 
-    constructor(public x = 13.5 * TILE_SIZE, public y = 26 * TILE_SIZE,
-                    private pixPerFrame = 1.33) {
+    constructor(public x = 13.5 * TILE_SIZE, public y = 26 * TILE_SIZE, speed = 0.8) {
+        this.setSpeed(speed)
         this.updateTilePos()
+    }
+
+    setSpeed(speed: number) {
+        speed = Math.min(Math.max(0, speed), 1) // Clamp speed to a percentage
+        this.pixPerFrame = speed * this.MAX_SPEED
     }
 
     update() {
@@ -18,24 +26,31 @@ class Player {
             var tile = TileMap.getTile(this.tileX, this.tileY)
             if (tile > 1) {
                 //Don't move this frame if they ate a dot
+                if (--TileMap.totalDots <= 0) {
+                    console.log("You Win!!")
+                    this.direction = null
+                }
                 if (tile === 2) this.frameHalt = 1
-                if (tile === 3) this.frameHalt = 3
+                else if (tile === 3) this.frameHalt = 3
                 TileMap.setTile(this.tileX, this.tileY, 1)
             }
         }
-        // Are they trying to move in the opposite direction?
-        if (Math.abs(this.desiredDirection - this.direction) === 2
-                && this.directionPossible(this.desiredDirection)) {
-            this.direction = this.desiredDirection
-        }
         // Check if we're at the tile's midpoint
-        if (this.x % TILE_SIZE < this.pixPerFrame && this.y % TILE_SIZE < this.pixPerFrame) {
+        if ((this.x + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame
+                && (this.y + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame) {
+            // Snap to center of tile
+            this.x = this.tileX * TILE_SIZE
+            this.y = this.tileY * TILE_SIZE
             // Update direction
             if (this.directionPossible(this.desiredDirection)) {
                 this.direction = this.desiredDirection
             } else if (!this.directionPossible(this.direction)) {
                 this.direction = null
             }
+        } else if (Math.abs(this.desiredDirection - this.direction) === 2
+                    && this.directionPossible(this.desiredDirection)) {
+            // If they're trying to turn around, let them
+            this.direction = this.desiredDirection
         }
         if (this.frameHalt > 0) {
             this.frameHalt--
