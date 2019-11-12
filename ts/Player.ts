@@ -38,9 +38,19 @@ class Player {
         // Check if we're at the tile's midpoint
         if ((this.x + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame
                 && (this.y + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame) {
+            // Wrap x-axis
+            if (this.tileX < -1 && this.direction === dir.LEFT) {
+                this.x = 28 * TILE_SIZE
+                this.updateTilePos()
+            } else if (this.tileX > 27 && this.direction === dir.RIGHT) {
+                this.x = -TILE_SIZE
+                this.updateTilePos()
+            }
             // Snap to center of tile
-            this.x = this.tileX * TILE_SIZE
-            this.y = this.tileY * TILE_SIZE
+            if (this.x > 0) {
+                this.x = this.tileX * TILE_SIZE
+                this.y = this.tileY * TILE_SIZE
+            }
             // Update direction
             if (this.directionPossible(this.desiredDirection)) {
                 this.direction = this.desiredDirection
@@ -61,10 +71,19 @@ class Player {
 
     private directionPossible(direction: number): boolean {
         switch (direction) {
-            case dir.UP: return TileMap.getTile(this.tileX, this.tileY - 1) > 0
-            case dir.DOWN: return TileMap.getTile(this.tileX, this.tileY + 1) > 0
-            case dir.LEFT:  return TileMap.getTile(this.tileX - 1, this.tileY) > 0
-            case dir.RIGHT: return TileMap.getTile(this.tileX + 1, this.tileY) > 0
+            case dir.UP: {
+                return TileMap.getTile(this.tileX, this.tileY - 1) > 0
+            }
+            case dir.DOWN: {
+                return TileMap.getTile(this.tileX, this.tileY + 1) > 0
+            }
+            // Allow undefined results on LEFT or RIGHT for x-axis wrapping
+            case dir.LEFT: {
+                return TileMap.getTile(this.tileX - 1, this.tileY) !== 0
+            }
+            case dir.RIGHT: {
+                return TileMap.getTile(this.tileX + 1, this.tileY) !== 0
+            }
         }
     }
 
