@@ -1,17 +1,26 @@
+/// <reference path="helper.ts"/>
 /// <reference path="TileMap.ts" />
 /// <reference path="Player.ts" />
-const TILE_SIZE = 16
-const dir = {
-    "UP": 0,
-    "LEFT": 1,
-    "DOWN": 2,
-    "RIGHT": 3
-}
-
+/// <reference path="Ghost.ts"/>
+/// <reference path="Blinky.ts"/>
+/// <reference path="Pinky.ts"/>
+/// <reference path="Inky.ts"/>
+/// <reference path="Clyde.ts"/>
 const canvas = <HTMLCanvasElement>document.getElementById("canvas")
 const c = canvas.getContext("2d")
 
 const player = new Player()
+let blinky: Blinky, pinky: Pinky, inky: Inky, clyde: Clyde
+const ghosts = [
+    blinky = new Blinky(),
+    pinky = new Pinky(),
+    inky = new Inky(),
+    clyde = new Clyde()
+]
+blinky.dead = false
+setTimeout(() => pinky.dead = false, 1000)
+setTimeout(() => inky.dead = false, 2000)
+setTimeout(() => clyde.dead = false, 3000)
 
 window.addEventListener("keydown", (e) => {
     if (e.key === "w" || e.key === "ArrowUp") player.desiredDirection = dir.UP
@@ -25,9 +34,11 @@ function draw() {
     c.fillRect(0, 0, canvas.width, canvas.height)
 
     player.update()
+    ghosts.forEach((g) => g.update())
 
     TileMap.draw(c)
     player.draw(c)
+    ghosts.forEach((g) => g.draw(c))
 
     window.requestAnimationFrame(draw)
 }

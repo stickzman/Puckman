@@ -1,3 +1,4 @@
+/// <reference path="helper.ts"/>
 class TileMap {
     static readonly INIT_MAP = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -71,7 +72,7 @@ class TileMap {
 
                 ctx.fillStyle = "black"
                 ctx.fillRect(tileI * TILE_SIZE, tileJ * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                ctx.fillStyle = "white"
+                ctx.fillStyle = "rgb(255,200,200)"
                 if (tile === 2) {
                     // Dot special case
                     ctx.beginPath()

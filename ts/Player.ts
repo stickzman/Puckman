@@ -1,11 +1,11 @@
+/// <reference path="helper.ts"/>
 class Player {
-    private readonly MAX_SPEED = TILE_SIZE * 0.16
-    private direction = dir.LEFT
     private color = "yellow"
     private frameHalt = 0
     private pixPerFrame: number
 
     debug = false
+    direction = dir.LEFT
     desiredDirection = this.direction
     tileX: number
     tileY: number
@@ -17,7 +17,7 @@ class Player {
 
     setSpeed(speed: number) {
         speed = Math.min(Math.max(0, speed), 1) // Clamp speed to a percentage
-        this.pixPerFrame = speed * this.MAX_SPEED
+        this.pixPerFrame = speed * MAX_SPEED
     }
 
     update() {
