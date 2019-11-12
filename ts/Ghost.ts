@@ -2,7 +2,7 @@
 class Ghost {
     protected readonly allDirections = [0, 1, 2, 3]
 
-    protected static pixPerFrame: number
+    protected pixPerFrame: number
     protected color = "brown"
     protected direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
     protected scatterX = 0
@@ -17,7 +17,7 @@ class Ghost {
     tileY: number
 
     constructor(public x = 13.5 * TILE_SIZE, public y = 14 * TILE_SIZE) {
-        Ghost.setSpeed(0.75)
+        this.setSpeed(0.75)
     }
 
     update() {
@@ -25,8 +25,8 @@ class Ghost {
         this.updateTarget()
         this.updateTilePos()
         // Check if we're at the tile's midpoint
-        if ((this.x + Ghost.pixPerFrame/2) % TILE_SIZE < Ghost.pixPerFrame
-                && (this.y + Ghost.pixPerFrame/2) % TILE_SIZE < Ghost.pixPerFrame) {
+        if ((this.x + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame
+                && (this.y + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame) {
             // Snap to center of tile
             this.x = this.tileX * TILE_SIZE
             this.y = this.tileY * TILE_SIZE
@@ -40,12 +40,12 @@ class Ghost {
         if (this.state !== STATE.FRIGHTENED)
             this.direction = this.getOppositeDir(this.direction)
         switch (state) {
-            case STATE.FRIGHTENED: Ghost.setSpeed(0.5); break;
+            case STATE.FRIGHTENED: this.setSpeed(0.5); break;
             case STATE.SCATTER: {
                 this.targetX = this.scatterX
                 this.targetY = this.scatterY
             }
-            default: Ghost.setSpeed(0.75)
+            default: this.setSpeed(0.75)
         }
         this.state = state
     }
@@ -54,10 +54,10 @@ class Ghost {
 
     protected move() {
         switch (this.direction) {
-            case dir.UP: this.y -= Ghost.pixPerFrame; break;
-            case dir.DOWN: this.y += Ghost.pixPerFrame; break;
-            case dir.LEFT: this.x -= Ghost.pixPerFrame; break;
-            case dir.RIGHT: this.x += Ghost.pixPerFrame; break;
+            case dir.UP: this.y -= this.pixPerFrame; break;
+            case dir.DOWN: this.y += this.pixPerFrame; break;
+            case dir.LEFT: this.x -= this.pixPerFrame; break;
+            case dir.RIGHT: this.x += this.pixPerFrame; break;
         }
     }
 
@@ -133,9 +133,9 @@ class Ghost {
         return (direction < 2) ? direction + 2 : direction - 2
     }
 
-    static setSpeed(speed: number) {
+    setSpeed(speed: number) {
         speed = Math.min(Math.max(0, speed), 1) // Clamp speed to a percentage
-        Ghost.pixPerFrame = speed * MAX_SPEED
+        this.pixPerFrame = speed * MAX_SPEED
     }
 
     draw(c: CanvasRenderingContext2D) {
