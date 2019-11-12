@@ -16,14 +16,13 @@ class Ghost {
     tileX: number
     tileY: number
 
-    constructor(public x = 13.5 * TILE_SIZE, public y = 14 * TILE_SIZE) {
-        this.setSpeed(0.75)
-    }
+    constructor(public x = 13.5 * TILE_SIZE, public y = 14 * TILE_SIZE) { }
 
     update() {
         if (this.dead) return
         this.updateTarget()
         this.updateTilePos()
+        this.updateSpeed()
         // Check if we're at the tile's midpoint
         if ((this.x + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame
                 && (this.y + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame) {
@@ -61,6 +60,17 @@ class Ghost {
     }
 
     protected updateTarget() { }
+
+    protected updateSpeed() {
+        if (this.tileY === 17 && (this.tileX < 6 || this.tileX >= 22)) {
+            // Tunnel speed penalty
+            this.setSpeed(0.4)
+        } else if (this.state === STATE.FRIGHTENED) {
+            this.setSpeed(0.5)
+        } else {
+            this.setSpeed(0.75)
+        }
+    }
 
     protected move() {
         switch (this.direction) {
@@ -133,6 +143,9 @@ class Ghost {
     protected directionPossible(direction: number): boolean {
         switch (direction) {
             case dir.UP: {
+                if (this.tileX >= 12 && this.tileX <= 16
+                    && (this.tileY === 14 || this.tileY === 26))
+                        return false
                 return TileMap.getTile(this.tileX, this.tileY - 1) > 0
             }
             case dir.DOWN: {
