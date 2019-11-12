@@ -1,7 +1,8 @@
 /// <reference path="Ghost.ts"/>
 class Pinky extends Ghost {
-    protected INIT_COLOR = "pink"
-    protected color = this.INIT_COLOR
+    protected color = "pink"
+    protected scatterX = 4
+    protected scatterY = 1
 
     constructor(x?: number, y?: number) {
         super(x, y)
@@ -31,9 +32,6 @@ class Pinky extends Ghost {
                     break
                 }
             }
-        } else {
-            this.targetX = 4
-            this.targetY = 1
         }
     }
 }

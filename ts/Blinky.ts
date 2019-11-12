@@ -1,7 +1,8 @@
 /// <reference path="Ghost.ts"/>
 class Blinky extends Ghost {
-    protected INIT_COLOR = "red"
-    protected color = this.INIT_COLOR
+    protected color = "red"
+    protected scatterX = 24
+    protected scatterY = 1
 
     constructor(x?: number, y?: number) {
         super(x, y)
@@ -11,9 +12,6 @@ class Blinky extends Ghost {
         if (this.state === STATE.CHASE) {
             this.targetX = player.tileX
             this.targetY = player.tileY
-        } else {
-            this.targetX = 24
-            this.targetY = 1
         }
     }
 }

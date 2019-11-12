@@ -3,9 +3,10 @@ class Ghost {
     protected readonly allDirections = [0, 1, 2, 3]
 
     protected static pixPerFrame: number
-    protected INIT_COLOR = "brown"
-    protected color = this.INIT_COLOR
+    protected color = "brown"
     protected direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
+    protected scatterX = 0
+    protected scatterY = 0
 
     debug = false
     dead = true
@@ -20,8 +21,8 @@ class Ghost {
     }
 
     update() {
-        this.updateTarget()
         if (this.dead) return
+        this.updateTarget()
         this.updateTilePos()
         // Check if we're at the tile's midpoint
         if ((this.x + Ghost.pixPerFrame/2) % TILE_SIZE < Ghost.pixPerFrame
@@ -29,11 +30,7 @@ class Ghost {
             // Snap to center of tile
             this.x = this.tileX * TILE_SIZE
             this.y = this.tileY * TILE_SIZE
-            if (this.state === STATE.FRIGHTENED) {
-                this.direction = this.randomDir()
-            } else {
-                this.direction = this.findBestDir()
-            }
+            this.direction = this.getNextDirection()
         }
         this.move()
     }
@@ -41,13 +38,14 @@ class Ghost {
     setState(state: STATE) {
         // If we're not transitioning from "FRIGHTENED" state, reverse direction
         if (this.state !== STATE.FRIGHTENED)
-            this.direction = (this.direction < 2) ? this.direction + 2 : this.direction - 2
-        if (state === STATE.FRIGHTENED) {
-            Ghost.setSpeed(0.5)
-            this.color = "blue"
-        } else {
-            Ghost.setSpeed(0.75)
-            this.color = this.INIT_COLOR
+            this.direction = this.getOppositeDir(this.direction)
+        switch (state) {
+            case STATE.FRIGHTENED: Ghost.setSpeed(0.5); break;
+            case STATE.SCATTER: {
+                this.targetX = this.scatterX
+                this.targetY = this.scatterY
+            }
+            default: Ghost.setSpeed(0.75)
         }
         this.state = state
     }
@@ -68,9 +66,17 @@ class Ghost {
         this.tileY = TileMap.toTileSize(this.y)
     }
 
+    protected getNextDirection(): number {
+        if (this.state === STATE.FRIGHTENED) {
+            return this.randomDir()
+        } else {
+            return this.findBestDir()
+        }
+    }
+
     protected findBestDir(): dir {
         // Find opposite direction, as ghosts aren't allowed to turn around
-        const oppDir = (this.direction < 2) ? this.direction + 2 : this.direction - 2
+        const oppDir = this.getOppositeDir(this.direction)
         // Find the distance to the target for all directions
         const distances = this.allDirections.map((d) => {
             if (d === oppDir || !this.directionPossible(d)) return Infinity
@@ -123,6 +129,10 @@ class Ghost {
         }
     }
 
+    protected getOppositeDir(direction: number): number {
+        return (direction < 2) ? direction + 2 : direction - 2
+    }
+
     static setSpeed(speed: number) {
         speed = Math.min(Math.max(0, speed), 1) // Clamp speed to a percentage
         Ghost.pixPerFrame = speed * MAX_SPEED
@@ -131,7 +141,7 @@ class Ghost {
     draw(c: CanvasRenderingContext2D) {
         if (this.dead) return
         c.save()
-        c.fillStyle = this.color
+        c.fillStyle = (this.state === STATE.FRIGHTENED) ? "blue" : this.color
         c.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE)
         if (this.debug) {
             c.strokeStyle = "red"

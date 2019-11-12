@@ -29,9 +29,10 @@ class Ghost {
         this.x = x;
         this.y = y;
         this.allDirections = [0, 1, 2, 3];
-        this.INIT_COLOR = "brown";
-        this.color = this.INIT_COLOR;
+        this.color = "brown";
         this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT;
+        this.scatterX = 0;
+        this.scatterY = 0;
         this.debug = false;
         this.dead = true;
         this.state = STATE.CHASE;
@@ -40,9 +41,9 @@ class Ghost {
         Ghost.setSpeed(0.75);
     }
     update() {
-        this.updateTarget();
         if (this.dead)
             return;
+        this.updateTarget();
         this.updateTilePos();
         // Check if we're at the tile's midpoint
         if ((this.x + Ghost.pixPerFrame / 2) % TILE_SIZE < Ghost.pixPerFrame
@@ -50,26 +51,23 @@ class Ghost {
             // Snap to center of tile
             this.x = this.tileX * TILE_SIZE;
             this.y = this.tileY * TILE_SIZE;
-            if (this.state === STATE.FRIGHTENED) {
-                this.direction = this.randomDir();
-            }
-            else {
-                this.direction = this.findBestDir();
-            }
+            this.direction = this.getNextDirection();
         }
         this.move();
     }
     setState(state) {
         // If we're not transitioning from "FRIGHTENED" state, reverse direction
         if (this.state !== STATE.FRIGHTENED)
-            this.direction = (this.direction < 2) ? this.direction + 2 : this.direction - 2;
-        if (state === STATE.FRIGHTENED) {
-            Ghost.setSpeed(0.5);
-            this.color = "blue";
-        }
-        else {
-            Ghost.setSpeed(0.75);
-            this.color = this.INIT_COLOR;
+            this.direction = this.getOppositeDir(this.direction);
+        switch (state) {
+            case STATE.FRIGHTENED:
+                Ghost.setSpeed(0.5);
+                break;
+            case STATE.SCATTER: {
+                this.targetX = this.scatterX;
+                this.targetY = this.scatterY;
+            }
+            default: Ghost.setSpeed(0.75);
         }
         this.state = state;
     }
@@ -94,9 +92,17 @@ class Ghost {
         this.tileX = TileMap.toTileSize(this.x);
         this.tileY = TileMap.toTileSize(this.y);
     }
+    getNextDirection() {
+        if (this.state === STATE.FRIGHTENED) {
+            return this.randomDir();
+        }
+        else {
+            return this.findBestDir();
+        }
+    }
     findBestDir() {
         // Find opposite direction, as ghosts aren't allowed to turn around
-        const oppDir = (this.direction < 2) ? this.direction + 2 : this.direction - 2;
+        const oppDir = this.getOppositeDir(this.direction);
         // Find the distance to the target for all directions
         const distances = this.allDirections.map((d) => {
             if (d === oppDir || !this.directionPossible(d))
@@ -148,6 +154,9 @@ class Ghost {
             case dir.RIGHT: return TileMap.getTile(this.tileX + 1, this.tileY) > 0;
         }
     }
+    getOppositeDir(direction) {
+        return (direction < 2) ? direction + 2 : direction - 2;
+    }
     static setSpeed(speed) {
         speed = Math.min(Math.max(0, speed), 1); // Clamp speed to a percentage
         Ghost.pixPerFrame = speed * MAX_SPEED;
@@ -156,7 +165,7 @@ class Ghost {
         if (this.dead)
             return;
         c.save();
-        c.fillStyle = this.color;
+        c.fillStyle = (this.state === STATE.FRIGHTENED) ? "blue" : this.color;
         c.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
         if (this.debug) {
             c.strokeStyle = "red";
@@ -165,6 +174,118 @@ class Ghost {
             c.strokeRect(this.targetX * TILE_SIZE, this.targetY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
         c.restore();
+    }
+}
+/// <reference path="Ghost.ts"/>
+class Blinky extends Ghost {
+    constructor(x, y) {
+        super(x, y);
+        this.color = "red";
+        this.scatterX = 24;
+        this.scatterY = 1;
+    }
+    updateTarget() {
+        if (this.state === STATE.CHASE) {
+            this.targetX = player.tileX;
+            this.targetY = player.tileY;
+        }
+    }
+}
+/// <reference path="Ghost.ts"/>
+class Clyde extends Ghost {
+    constructor(x, y) {
+        super(x, y);
+        this.color = "orange";
+        this.scatterX = 0;
+        this.scatterY = 35;
+    }
+    updateTarget() {
+        if (this.state === STATE.CHASE) {
+            if (Math.hypot(player.tileX - this.tileX, player.tileY - this.tileY) > 8) {
+                this.targetX = player.tileX;
+                this.targetY = player.tileY;
+            }
+            else {
+                this.targetX = this.scatterX;
+                this.targetY = this.scatterY;
+            }
+        }
+    }
+}
+/// <reference path="Ghost.ts"/>
+class Inky extends Ghost {
+    constructor(x, y) {
+        super(x, y);
+        this.color = "lightblue";
+        this.scatterX = 27;
+        this.scatterY = 35;
+        this.updateOffset();
+    }
+    updateTarget() {
+        if (this.state === STATE.CHASE) {
+            this.updateOffset();
+            this.targetX = this.offsetX + (this.offsetX - blinky.tileX);
+            this.targetY = this.offsetY + (this.offsetY - blinky.tileY);
+        }
+    }
+    updateOffset() {
+        switch (player.direction) {
+            case dir.UP: {
+                this.offsetX = player.tileX;
+                this.offsetY = player.tileY - 2;
+                break;
+            }
+            case dir.DOWN: {
+                this.offsetX = player.tileX;
+                this.offsetY = player.tileY + 2;
+                break;
+            }
+            case dir.LEFT: {
+                this.offsetX = player.tileX - 2;
+                this.offsetY = player.tileY;
+                break;
+            }
+            case dir.RIGHT: {
+                this.offsetX = player.tileX + 2;
+                this.offsetY = player.tileY;
+                break;
+            }
+        }
+    }
+}
+/// <reference path="Ghost.ts"/>
+class Pinky extends Ghost {
+    constructor(x, y) {
+        super(x, y);
+        this.color = "pink";
+        this.scatterX = 4;
+        this.scatterY = 1;
+    }
+    updateTarget() {
+        if (this.state === STATE.CHASE) {
+            switch (player.direction) {
+                case dir.UP: {
+                    this.targetX = player.tileX;
+                    this.targetY = player.tileY - 4;
+                    break;
+                }
+                case dir.DOWN: {
+                    this.targetX = player.tileX;
+                    this.targetY = player.tileY + 4;
+                    break;
+                }
+                case dir.LEFT: {
+                    this.targetX = player.tileX - 4;
+                    this.targetY = player.tileY;
+                    break;
+                }
+                case dir.RIGHT: {
+                    this.targetX = player.tileX + 4;
+                    this.targetY = player.tileY;
+                    break;
+                }
+            }
+        }
     }
 }
 /// <reference path="helper.ts"/>
@@ -354,121 +475,6 @@ TileMap.INIT_MAP = [
 ];
 TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
 TileMap.totalDots = 244;
-/// <reference path="Ghost.ts"/>
-class Blinky extends Ghost {
-    constructor(x, y) {
-        super(x, y);
-        this.INIT_COLOR = "red";
-        this.color = this.INIT_COLOR;
-    }
-    updateTarget() {
-        if (this.state === STATE.CHASE) {
-            this.targetX = player.tileX;
-            this.targetY = player.tileY;
-        }
-        else {
-            this.targetX = 24;
-            this.targetY = 1;
-        }
-    }
-}
-/// <reference path="Ghost.ts"/>
-class Pinky extends Ghost {
-    constructor(x, y) {
-        super(x, y);
-        this.INIT_COLOR = "pink";
-        this.color = this.INIT_COLOR;
-    }
-    updateTarget() {
-        if (this.state === STATE.CHASE) {
-            switch (player.direction) {
-                case dir.UP: {
-                    this.targetX = player.tileX;
-                    this.targetY = player.tileY - 4;
-                    break;
-                }
-                case dir.DOWN: {
-                    this.targetX = player.tileX;
-                    this.targetY = player.tileY + 4;
-                    break;
-                }
-                case dir.LEFT: {
-                    this.targetX = player.tileX - 4;
-                    this.targetY = player.tileY;
-                    break;
-                }
-                case dir.RIGHT: {
-                    this.targetX = player.tileX + 4;
-                    this.targetY = player.tileY;
-                    break;
-                }
-            }
-        }
-        else {
-            this.targetX = 4;
-            this.targetY = 1;
-        }
-    }
-}
-/// <reference path="Ghost.ts"/>
-class Inky extends Ghost {
-    constructor(x, y) {
-        super(x, y);
-        this.INIT_COLOR = "lightblue";
-        this.color = this.INIT_COLOR;
-    }
-    updateTarget() {
-        if (this.state === STATE.CHASE) {
-            switch (player.direction) {
-                case dir.UP: {
-                    this.offsetX = player.tileX;
-                    this.offsetY = player.tileY - 2;
-                    break;
-                }
-                case dir.DOWN: {
-                    this.offsetX = player.tileX;
-                    this.offsetY = player.tileY + 2;
-                    break;
-                }
-                case dir.LEFT: {
-                    this.offsetX = player.tileX - 2;
-                    this.offsetY = player.tileY;
-                    break;
-                }
-                case dir.RIGHT: {
-                    this.offsetX = player.tileX + 2;
-                    this.offsetY = player.tileY;
-                    break;
-                }
-            }
-            this.targetX = this.offsetX + (this.offsetX - blinky.tileX);
-            this.targetY = this.offsetY + (this.offsetY - blinky.tileY);
-        }
-        else {
-            this.targetX = 27;
-            this.targetY = 35;
-        }
-    }
-}
-/// <reference path="Ghost.ts"/>
-class Clyde extends Ghost {
-    constructor(x, y) {
-        super(x, y);
-        this.INIT_COLOR = "orange";
-        this.color = this.INIT_COLOR;
-    }
-    updateTarget() {
-        if (this.state === STATE.CHASE
-            && Math.hypot(player.tileX - this.tileX, player.tileY - this.tileY) > 8) {
-            this.targetX = player.tileX;
-            this.targetY = player.tileY;
-        }
-        else {
-            this.targetX = 0;
-            this.targetY = 35;
-        }
-    }
-}
 /// <reference path="helper.ts"/>
 /// <reference path="TileMap.ts" />
 /// <reference path="Player.ts" />
@@ -501,6 +507,9 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "d" || e.key === "ArrowRight")
         player.desiredDirection = dir.RIGHT;
 });
+function setState(state) {
+    ghosts.forEach((g) => g.setState(state));
+}
 function draw() {
     c.fillStyle = "blue";
     c.fillRect(0, 0, canvas.width, canvas.height);

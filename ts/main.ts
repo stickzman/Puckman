@@ -29,6 +29,10 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "d" || e.key === "ArrowRight") player.desiredDirection = dir.RIGHT
 })
 
+function setState(state: STATE) {
+    ghosts.forEach((g) => g.setState(state))
+}
+
 function draw() {
     c.fillStyle = "blue"
     c.fillRect(0, 0, canvas.width, canvas.height)
