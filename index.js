@@ -12,6 +12,7 @@ var STATE;
     STATE[STATE["CHASE"] = 0] = "CHASE";
     STATE[STATE["SCATTER"] = 1] = "SCATTER";
     STATE[STATE["FRIGHTENED"] = 2] = "FRIGHTENED";
+    STATE[STATE["EATEN"] = 3] = "EATEN";
 })(STATE || (STATE = {}));
 function shuffle(arr) {
     const array = arr.slice();
@@ -71,21 +72,17 @@ class Ghost {
         if (this.state !== STATE.FRIGHTENED)
             this.direction = this.getOppositeDir(this.direction);
         switch (state) {
-            case STATE.FRIGHTENED:
-                this.setSpeed(0.5);
-                break;
             case STATE.SCATTER: {
                 this.targetX = this.scatterX;
                 this.targetY = this.scatterY;
             }
-            default: this.setSpeed(0.75);
         }
         this.state = state;
     }
     updateTarget() { }
     updateSpeed() {
+        // Tunnel speed penalty
         if (this.tileY === 17 && (this.tileX < 6 || this.tileX >= 22)) {
-            // Tunnel speed penalty
             this.setSpeed(0.4);
         }
         else if (this.state === STATE.FRIGHTENED) {

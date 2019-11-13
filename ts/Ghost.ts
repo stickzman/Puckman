@@ -2,11 +2,11 @@
 class Ghost {
     protected readonly allDirections = [0, 1, 2, 3]
 
-    protected pixPerFrame: number
     protected color = "brown"
     protected direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
     protected scatterX = 0
     protected scatterY = 0
+    protected pixPerFrame: number
 
     debug = false
     dead = true
@@ -49,12 +49,10 @@ class Ghost {
         if (this.state !== STATE.FRIGHTENED)
             this.direction = this.getOppositeDir(this.direction)
         switch (state) {
-            case STATE.FRIGHTENED: this.setSpeed(0.5); break;
             case STATE.SCATTER: {
                 this.targetX = this.scatterX
                 this.targetY = this.scatterY
             }
-            default: this.setSpeed(0.75)
         }
         this.state = state
     }
@@ -62,8 +60,8 @@ class Ghost {
     protected updateTarget() { }
 
     protected updateSpeed() {
+        // Tunnel speed penalty
         if (this.tileY === 17 && (this.tileX < 6 || this.tileX >= 22)) {
-            // Tunnel speed penalty
             this.setSpeed(0.4)
         } else if (this.state === STATE.FRIGHTENED) {
             this.setSpeed(0.5)

@@ -9,7 +9,8 @@ enum dir {
 enum STATE {
     CHASE,
     SCATTER,
-    FRIGHTENED
+    FRIGHTENED,
+    EATEN
 }
 function shuffle(arr: any[]): any[] {
     const array = arr.slice()
