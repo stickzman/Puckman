@@ -75,6 +75,16 @@ class Player {
         } else {
             this.move() // Update x, y pixel position
         }
+        //Check for collision
+        ghosts.forEach((g) => {
+            if (this.tileX === g.tileX && this.tileY === g.tileY) {
+                if (g.state === STATE.FRIGHTENED) {
+                    g.setState(STATE.EATEN)
+                } else if (g.active) {
+                    this.frameHalt = 100
+                }
+            }
+        })
     }
 
     private directionPossible(direction: number): boolean {
