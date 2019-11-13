@@ -1,4 +1,4 @@
-const TILE_SIZE = 16
+const TILE_SIZE = Math.floor(Math.min(window.innerHeight/36, window.innerWidth/28))
 const MAX_SPEED = TILE_SIZE * 0.16
 enum dir {
     UP,

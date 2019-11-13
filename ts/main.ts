@@ -7,6 +7,8 @@
 /// <reference path="Inky.ts"/>
 /// <reference path="Clyde.ts"/>
 const canvas = <HTMLCanvasElement>document.getElementById("canvas")
+canvas.height = 36 * TILE_SIZE
+canvas.width = 28 * TILE_SIZE
 const c = canvas.getContext("2d")
 
 let globalState = STATE.SCATTER

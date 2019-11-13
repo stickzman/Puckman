@@ -1,4 +1,4 @@
-const TILE_SIZE = 16;
+const TILE_SIZE = Math.floor(Math.min(window.innerHeight / 36, window.innerWidth / 28));
 const MAX_SPEED = TILE_SIZE * 0.16;
 var dir;
 (function (dir) {
@@ -664,6 +664,8 @@ TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
 /// <reference path="Inky.ts"/>
 /// <reference path="Clyde.ts"/>
 const canvas = document.getElementById("canvas");
+canvas.height = 36 * TILE_SIZE;
+canvas.width = 28 * TILE_SIZE;
 const c = canvas.getContext("2d");
 let globalState = STATE.SCATTER;
 let frameCount = 0;
