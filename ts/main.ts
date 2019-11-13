@@ -38,31 +38,31 @@ function setGlobalState(state: STATE) {
 function tick() {
     if (globalFrameHalt > 0) {
         globalFrameHalt--
-        return
-    }
-    switch (frameCount++) {
-        case 420:
-        case 2040:
-        case 3540:
-        case 5040:
+    } else {
+        switch (frameCount++) {
+            case 420:
+            case 2040:
+            case 3540:
+            case 5040:
             setGlobalState(STATE.CHASE)
             break
-        case 1620:
-        case 3240:
-        case 4740:
+            case 1620:
+            case 3240:
+            case 4740:
             setGlobalState(STATE.SCATTER)
             break
+        }
+
+        c.fillStyle = "blue"
+        c.fillRect(0, 0, canvas.width, canvas.height)
+
+        player.update()
+        ghosts.forEach((g) => g.update())
+
+        TileMap.draw(c)
+        player.draw(c)
+        ghosts.forEach((g) => g.draw(c))
     }
-
-    c.fillStyle = "blue"
-    c.fillRect(0, 0, canvas.width, canvas.height)
-
-    player.update()
-    ghosts.forEach((g) => g.update())
-
-    TileMap.draw(c)
-    player.draw(c)
-    ghosts.forEach((g) => g.draw(c))
 
     window.requestAnimationFrame(tick)
 }

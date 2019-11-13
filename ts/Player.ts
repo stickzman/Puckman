@@ -31,7 +31,7 @@ class Player {
                 ghosts.forEach((g) => g.incDotCount())
                 if (++this.dotCount >= this.dotLimit) {
                     console.log("You Win!!")
-                    this.direction = null
+                    globalFrameHalt = Infinity
                 }
                 if (tile === 2) {
                     this.frameHalt = 1
@@ -81,7 +81,7 @@ class Player {
                 if (g.state === STATE.FRIGHTENED) {
                     g.setState(STATE.EATEN)
                 } else if (g.active) {
-                    globalFrameHalt = 100
+                    globalFrameHalt = Infinity
                 }
             }
         })
