@@ -12,6 +12,7 @@ const c = canvas.getContext("2d")
 let globalState = STATE.SCATTER
 let frameCount = 0
 let globalFrameHalt = 0
+let paused = false
 const player = new Player()
 let blinky: Blinky, pinky: Pinky, inky: Inky, clyde: Clyde
 const ghosts = [
@@ -22,6 +23,7 @@ const ghosts = [
 ]
 
 window.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === "Escape") paused = !paused
     if (e.key === "w" || e.key === "ArrowUp") player.desiredDirection = dir.UP
     if (e.key === "a" || e.key === "ArrowLeft") player.desiredDirection = dir.LEFT
     if (e.key === "s" || e.key === "ArrowDown") player.desiredDirection = dir.DOWN
@@ -38,19 +40,19 @@ function setGlobalState(state: STATE) {
 function tick() {
     if (globalFrameHalt > 0) {
         globalFrameHalt--
-    } else {
+    } else if (!paused) {
         switch (frameCount++) {
             case 420:
             case 2040:
             case 3540:
             case 5040:
-            setGlobalState(STATE.CHASE)
-            break
+                setGlobalState(STATE.CHASE)
+                break
             case 1620:
             case 3240:
             case 4740:
-            setGlobalState(STATE.SCATTER)
-            break
+                setGlobalState(STATE.SCATTER)
+                break
         }
 
         c.fillStyle = "blue"
