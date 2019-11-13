@@ -9,6 +9,8 @@
 const canvas = <HTMLCanvasElement>document.getElementById("canvas")
 const c = canvas.getContext("2d")
 
+let globalState = STATE.SCATTER
+let frameCount = 0
 const player = new Player()
 let blinky: Blinky, pinky: Pinky, inky: Inky, clyde: Clyde
 const ghosts = [
@@ -25,11 +27,28 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "d" || e.key === "ArrowRight") player.desiredDirection = dir.RIGHT
 })
 
-function setState(state: STATE) {
-    ghosts.forEach((g) => g.setState(state))
+function setGlobalState(state: STATE) {
+    globalState = state
+    ghosts.forEach((g) => {
+        if (g.active && g.state !== STATE.FRIGHTENED) g.setState(state)
+    })
 }
 
-function draw() {
+function tick() {
+    switch (frameCount++) {
+        case 420:
+        case 2040:
+        case 3540:
+        case 5040:
+            setGlobalState(STATE.CHASE)
+            break
+        case 1620:
+        case 3240:
+        case 4740:
+            setGlobalState(STATE.SCATTER)
+            break
+    }
+
     c.fillStyle = "blue"
     c.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -40,6 +59,6 @@ function draw() {
     player.draw(c)
     ghosts.forEach((g) => g.draw(c))
 
-    window.requestAnimationFrame(draw)
+    window.requestAnimationFrame(tick)
 }
-draw()
+tick()

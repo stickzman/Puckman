@@ -12,9 +12,11 @@ class Ghost {
     protected waitY = 17
     protected dotLimit = 0
     protected dotCount = 0
+    protected frightenedFrames = 0
     protected pixPerFrame: number
 
     debug = false
+    active = false
     targetX: number = 0
     targetY: number = 0
     tileX: number
@@ -26,13 +28,15 @@ class Ghost {
     }
 
     update() {
-        if (this.state === STATE.WAITING) {
+        if (this.state === STATE.FRIGHTENED && --this.frightenedFrames <= 0) {
+            this.setState(globalState)
+        } else if (this.state === STATE.WAITING) {
             this.updateWaiting()
             return
         } else if (this.state === STATE.EXITING) {
             if (this.tileY === 14
                     && (this.y + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame) {
-                this.setState(STATE.CHASE)
+                this.setState(globalState)
             } else {
                 this.y -= this.pixPerFrame
                 this.updateTilePos()
@@ -83,10 +87,20 @@ class Ghost {
 
     setState(state: STATE) {
         // If we're not transitioning from "FRIGHTENED" state, reverse direction
-        if (this.state !== STATE.FRIGHTENED)
-            this.direction = this.getOppositeDir(this.direction)
         switch (state) {
+            case STATE.FRIGHTENED: {
+                if (!this.active) return
+                this.frightenedFrames = 720
+                break
+            }
+            case STATE.CHASE: {
+                if (this.state !== STATE.FRIGHTENED)
+                    this.direction = this.getOppositeDir(this.direction)
+                break
+            }
             case STATE.SCATTER: {
+                if (this.state !== STATE.FRIGHTENED)
+                    this.direction = this.getOppositeDir(this.direction)
                 this.targetX = this.scatterX
                 this.targetY = this.scatterY
                 break
@@ -110,6 +124,7 @@ class Ghost {
                 break
             }
         }
+        this.active = state === STATE.CHASE || state === STATE.SCATTER || state === STATE.FRIGHTENED
         this.state = state
     }
 

@@ -33,8 +33,13 @@ class Player {
                     console.log("You Win!!")
                     this.direction = null
                 }
-                if (tile === 2) this.frameHalt = 1
-                else if (tile === 3) this.frameHalt = 3
+                if (tile === 2) {
+                    this.frameHalt = 1
+                }
+                else if (tile === 3) {
+                    this.frameHalt = 3
+                    ghosts.forEach((g) => g.setState(STATE.FRIGHTENED))
+                }
                 TileMap.setTile(this.tileX, this.tileY, 1)
             }
         }

@@ -9,7 +9,7 @@ class Blinky extends Ghost {
         this.x = x
         this.y = y
         this.updateTilePos()
-        this.setState(STATE.CHASE)
+        this.setState(globalState)
     }
 
     updateTarget() {

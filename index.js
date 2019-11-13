@@ -42,20 +42,25 @@ class Ghost {
         this.waitY = 17;
         this.dotLimit = 0;
         this.dotCount = 0;
+        this.frightenedFrames = 0;
         this.debug = false;
+        this.active = false;
         this.targetX = 0;
         this.targetY = 0;
         this.setState(STATE.WAITING);
     }
     update() {
-        if (this.state === STATE.WAITING) {
+        if (this.state === STATE.FRIGHTENED && --this.frightenedFrames <= 0) {
+            this.setState(globalState);
+        }
+        else if (this.state === STATE.WAITING) {
             this.updateWaiting();
             return;
         }
         else if (this.state === STATE.EXITING) {
             if (this.tileY === 14
                 && (this.y + this.pixPerFrame / 2) % TILE_SIZE < this.pixPerFrame) {
-                this.setState(STATE.CHASE);
+                this.setState(globalState);
             }
             else {
                 this.y -= this.pixPerFrame;
@@ -106,10 +111,21 @@ class Ghost {
     }
     setState(state) {
         // If we're not transitioning from "FRIGHTENED" state, reverse direction
-        if (this.state !== STATE.FRIGHTENED)
-            this.direction = this.getOppositeDir(this.direction);
         switch (state) {
+            case STATE.FRIGHTENED: {
+                if (!this.active)
+                    return;
+                this.frightenedFrames = 720;
+                break;
+            }
+            case STATE.CHASE: {
+                if (this.state !== STATE.FRIGHTENED)
+                    this.direction = this.getOppositeDir(this.direction);
+                break;
+            }
             case STATE.SCATTER: {
+                if (this.state !== STATE.FRIGHTENED)
+                    this.direction = this.getOppositeDir(this.direction);
                 this.targetX = this.scatterX;
                 this.targetY = this.scatterY;
                 break;
@@ -133,6 +149,7 @@ class Ghost {
                 break;
             }
         }
+        this.active = state === STATE.CHASE || state === STATE.SCATTER || state === STATE.FRIGHTENED;
         this.state = state;
     }
     updateTarget() { }
@@ -293,7 +310,7 @@ class Blinky extends Ghost {
         this.x = x;
         this.y = y;
         this.updateTilePos();
-        this.setState(STATE.CHASE);
+        this.setState(globalState);
     }
     updateTarget() {
         if (this.state === STATE.CHASE) {
@@ -446,10 +463,13 @@ class Player {
                     console.log("You Win!!");
                     this.direction = null;
                 }
-                if (tile === 2)
+                if (tile === 2) {
                     this.frameHalt = 1;
-                else if (tile === 3)
+                }
+                else if (tile === 3) {
                     this.frameHalt = 3;
+                    ghosts.forEach((g) => g.setState(STATE.FRIGHTENED));
+                }
                 TileMap.setTile(this.tileX, this.tileY, 1);
             }
         }
@@ -634,6 +654,8 @@ TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
 /// <reference path="Clyde.ts"/>
 const canvas = document.getElementById("canvas");
 const c = canvas.getContext("2d");
+let globalState = STATE.SCATTER;
+let frameCount = 0;
 const player = new Player();
 let blinky, pinky, inky, clyde;
 const ghosts = [
@@ -652,10 +674,27 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "d" || e.key === "ArrowRight")
         player.desiredDirection = dir.RIGHT;
 });
-function setState(state) {
-    ghosts.forEach((g) => g.setState(state));
+function setGlobalState(state) {
+    globalState = state;
+    ghosts.forEach((g) => {
+        if (g.active && g.state !== STATE.FRIGHTENED)
+            g.setState(state);
+    });
 }
-function draw() {
+function tick() {
+    switch (frameCount++) {
+        case 420:
+        case 2040:
+        case 3540:
+        case 5040:
+            setGlobalState(STATE.CHASE);
+            break;
+        case 1620:
+        case 3240:
+        case 4740:
+            setGlobalState(STATE.SCATTER);
+            break;
+    }
     c.fillStyle = "blue";
     c.fillRect(0, 0, canvas.width, canvas.height);
     player.update();
@@ -663,7 +702,7 @@ function draw() {
     TileMap.draw(c);
     player.draw(c);
     ghosts.forEach((g) => g.draw(c));
-    window.requestAnimationFrame(draw);
+    window.requestAnimationFrame(tick);
 }
-draw();
+tick();
 //# sourceMappingURL=index.js.map
