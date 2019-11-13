@@ -11,6 +11,7 @@ const c = canvas.getContext("2d")
 
 let globalState = STATE.SCATTER
 let frameCount = 0
+let globalFrameHalt = 0
 const player = new Player()
 let blinky: Blinky, pinky: Pinky, inky: Inky, clyde: Clyde
 const ghosts = [
@@ -35,6 +36,10 @@ function setGlobalState(state: STATE) {
 }
 
 function tick() {
+    if (globalFrameHalt > 0) {
+        globalFrameHalt--
+        return
+    }
     switch (frameCount++) {
         case 420:
         case 2040:

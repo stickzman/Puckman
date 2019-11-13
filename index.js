@@ -516,7 +516,7 @@ class Player {
                     g.setState(STATE.EATEN);
                 }
                 else if (g.active) {
-                    this.frameHalt = 100;
+                    globalFrameHalt = 100;
                 }
             }
         });
@@ -667,6 +667,7 @@ const canvas = document.getElementById("canvas");
 const c = canvas.getContext("2d");
 let globalState = STATE.SCATTER;
 let frameCount = 0;
+let globalFrameHalt = 0;
 const player = new Player();
 let blinky, pinky, inky, clyde;
 const ghosts = [
@@ -693,6 +694,10 @@ function setGlobalState(state) {
     });
 }
 function tick() {
+    if (globalFrameHalt > 0) {
+        globalFrameHalt--;
+        return;
+    }
     switch (frameCount++) {
         case 420:
         case 2040:

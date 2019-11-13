@@ -81,7 +81,7 @@ class Player {
                 if (g.state === STATE.FRIGHTENED) {
                     g.setState(STATE.EATEN)
                 } else if (g.active) {
-                    this.frameHalt = 100
+                    globalFrameHalt = 100
                 }
             }
         })
