@@ -13,6 +13,8 @@ var STATE;
     STATE[STATE["SCATTER"] = 1] = "SCATTER";
     STATE[STATE["FRIGHTENED"] = 2] = "FRIGHTENED";
     STATE[STATE["EATEN"] = 3] = "EATEN";
+    STATE[STATE["WAITING"] = 4] = "WAITING";
+    STATE[STATE["EXITING"] = 5] = "EXITING";
 })(STATE || (STATE = {}));
 function shuffle(arr) {
     const array = arr.slice();
@@ -34,17 +36,41 @@ class Ghost {
         this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT;
         this.scatterX = 0;
         this.scatterY = 0;
+        this.homeX = 13;
+        this.homeY = 14;
+        this.waitX = 13.5;
+        this.waitY = 17;
+        this.dotLimit = 0;
+        this.dotCount = 0;
         this.debug = false;
-        this.dead = true;
-        this.state = STATE.CHASE;
         this.targetX = 0;
         this.targetY = 0;
+        this.setState(STATE.WAITING);
     }
     update() {
-        if (this.dead)
+        if (this.state === STATE.WAITING) {
+            this.updateWaiting();
             return;
+        }
+        else if (this.state === STATE.EXITING) {
+            if (this.tileY === 14
+                && (this.y + this.pixPerFrame / 2) % TILE_SIZE < this.pixPerFrame) {
+                this.setState(STATE.CHASE);
+            }
+            else {
+                this.y -= this.pixPerFrame;
+                this.updateTilePos();
+            }
+            return;
+        }
         this.updateTarget();
-        this.updateTilePos();
+        if (this.updateTilePos()) {
+            if (this.state === STATE.EATEN
+                && this.tileX === this.homeX
+                && this.tileY === this.homeY) {
+                this.setState(STATE.WAITING);
+            }
+        }
         this.updateSpeed();
         // Check if we're at the tile's midpoint
         if ((this.x + this.pixPerFrame / 2) % TILE_SIZE < this.pixPerFrame
@@ -67,6 +93,17 @@ class Ghost {
         }
         this.move();
     }
+    updateWaiting() {
+        if (this.dotCount < this.dotLimit ||
+            !ghosts.every((g) => g.state !== STATE.EXITING))
+            return;
+        this.dotCount = 0; // Reset the dot counter
+        this.setState(STATE.EXITING);
+    }
+    incDotCount() {
+        if (this.state === STATE.WAITING)
+            this.dotCount++;
+    }
     setState(state) {
         // If we're not transitioning from "FRIGHTENED" state, reverse direction
         if (this.state !== STATE.FRIGHTENED)
@@ -75,6 +112,25 @@ class Ghost {
             case STATE.SCATTER: {
                 this.targetX = this.scatterX;
                 this.targetY = this.scatterY;
+                break;
+            }
+            case STATE.EATEN: {
+                this.targetX = this.homeX;
+                this.targetY = this.homeY;
+                break;
+            }
+            case STATE.WAITING: {
+                this.x = this.waitX * TILE_SIZE;
+                this.y = this.waitY * TILE_SIZE;
+                this.updateTilePos();
+                break;
+            }
+            case STATE.EXITING: {
+                this.x = 13.5 * TILE_SIZE;
+                this.y = 17 * TILE_SIZE;
+                this.updateTilePos();
+                this.setSpeed(0.3);
+                break;
             }
         }
         this.state = state;
@@ -85,11 +141,20 @@ class Ghost {
         if (this.tileY === 17 && (this.tileX < 6 || this.tileX >= 22)) {
             this.setSpeed(0.4);
         }
-        else if (this.state === STATE.FRIGHTENED) {
-            this.setSpeed(0.5);
-        }
         else {
-            this.setSpeed(0.75);
+            switch (this.state) {
+                case STATE.FRIGHTENED: {
+                    this.setSpeed(0.5);
+                    break;
+                }
+                case STATE.EATEN: {
+                    this.setSpeed(1.5);
+                    break;
+                }
+                default: {
+                    this.setSpeed(0.75);
+                }
+            }
         }
     }
     move() {
@@ -109,8 +174,12 @@ class Ghost {
         }
     }
     updateTilePos() {
+        const oldX = this.tileX;
         this.tileX = TileMap.toTileSize(this.x);
+        const oldY = this.tileY;
         this.tileY = TileMap.toTileSize(this.y);
+        //Check if we've entered a new tile
+        return (this.tileX !== oldX || this.tileY !== oldY);
     }
     getNextDirection() {
         if (this.state === STATE.FRIGHTENED) {
@@ -189,14 +258,21 @@ class Ghost {
         return (direction < 2) ? direction + 2 : direction - 2;
     }
     setSpeed(speed) {
-        speed = Math.min(Math.max(0, speed), 1); // Clamp speed to a percentage
+        // Speed should be a percentage [0-1]
+        speed = Math.max(0, speed);
         this.pixPerFrame = speed * MAX_SPEED;
     }
     draw(c) {
-        if (this.dead)
-            return;
         c.save();
-        c.fillStyle = (this.state === STATE.FRIGHTENED) ? "blue" : this.color;
+        switch (this.state) {
+            case STATE.FRIGHTENED:
+                c.fillStyle = "blue";
+                break;
+            case STATE.EATEN:
+                c.fillStyle = "rgba(0,0,255,0.5)";
+                break;
+            default: c.fillStyle = this.color;
+        }
         c.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
         if (this.debug) {
             c.strokeStyle = "red";
@@ -209,11 +285,15 @@ class Ghost {
 }
 /// <reference path="Ghost.ts"/>
 class Blinky extends Ghost {
-    constructor(x, y) {
+    constructor(x = 13.5 * TILE_SIZE, y = 14 * TILE_SIZE) {
         super(x, y);
         this.color = "red";
         this.scatterX = 24;
         this.scatterY = 1;
+        this.x = x;
+        this.y = y;
+        this.updateTilePos();
+        this.setState(STATE.CHASE);
     }
     updateTarget() {
         if (this.state === STATE.CHASE) {
@@ -229,6 +309,15 @@ class Clyde extends Ghost {
         this.color = "orange";
         this.scatterX = 0;
         this.scatterY = 35;
+        this.dotLimit = 60;
+        this.waitX = 15.5;
+        this.setState(STATE.WAITING);
+    }
+    incDotCount() {
+        if (this.state === STATE.WAITING
+            && pinky.state !== STATE.WAITING
+            && inky.state !== STATE.WAITING)
+            this.dotCount++;
     }
     updateTarget() {
         if (this.state === STATE.CHASE) {
@@ -250,7 +339,15 @@ class Inky extends Ghost {
         this.color = "lightblue";
         this.scatterX = 27;
         this.scatterY = 35;
+        this.dotLimit = 30;
+        this.waitX = 11.5;
+        this.setState(STATE.WAITING);
         this.updateOffset();
+    }
+    incDotCount() {
+        if (this.state === STATE.WAITING
+            && pinky.state !== STATE.WAITING)
+            this.dotCount++;
     }
     updateTarget() {
         if (this.state === STATE.CHASE) {
@@ -326,9 +423,11 @@ class Player {
         this.y = y;
         this.color = "yellow";
         this.frameHalt = 0;
+        this.dotLimit = 244;
         this.debug = false;
         this.direction = dir.LEFT;
         this.desiredDirection = this.direction;
+        this.dotCount = 0;
         this.setSpeed(speed);
         this.updateTilePos();
     }
@@ -342,7 +441,8 @@ class Player {
             var tile = TileMap.getTile(this.tileX, this.tileY);
             if (tile > 1) {
                 //Don't move this frame if they ate a dot
-                if (--TileMap.totalDots <= 0) {
+                ghosts.forEach((g) => g.incDotCount());
+                if (++this.dotCount >= this.dotLimit) {
                     console.log("You Win!!");
                     this.direction = null;
                 }
@@ -447,7 +547,6 @@ class TileMap {
     constructor() { }
     static reset() {
         TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
-        TileMap.totalDots = 244;
     }
     static toTileSize(x) {
         return Math.round(x / TILE_SIZE);
@@ -525,7 +624,6 @@ TileMap.INIT_MAP = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
-TileMap.totalDots = 244;
 /// <reference path="helper.ts"/>
 /// <reference path="TileMap.ts" />
 /// <reference path="Player.ts" />
@@ -544,10 +642,6 @@ const ghosts = [
     inky = new Inky(),
     clyde = new Clyde()
 ];
-blinky.dead = false;
-setTimeout(() => pinky.dead = false, 1000);
-setTimeout(() => inky.dead = false, 2000);
-setTimeout(() => clyde.dead = false, 3000);
 window.addEventListener("keydown", (e) => {
     if (e.key === "w" || e.key === "ArrowUp")
         player.desiredDirection = dir.UP;

@@ -3,10 +3,12 @@ class Player {
     private color = "yellow"
     private frameHalt = 0
     private pixPerFrame: number
+    private dotLimit = 244
 
     debug = false
     direction = dir.LEFT
     desiredDirection = this.direction
+    dotCount = 0
     tileX: number
     tileY: number
 
@@ -26,7 +28,8 @@ class Player {
             var tile = TileMap.getTile(this.tileX, this.tileY)
             if (tile > 1) {
                 //Don't move this frame if they ate a dot
-                if (--TileMap.totalDots <= 0) {
+                ghosts.forEach((g) => g.incDotCount())
+                if (++this.dotCount >= this.dotLimit) {
                     console.log("You Win!!")
                     this.direction = null
                 }

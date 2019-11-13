@@ -17,10 +17,6 @@ const ghosts = [
     inky = new Inky(),
     clyde = new Clyde()
 ]
-blinky.dead = false
-setTimeout(() => pinky.dead = false, 1000)
-setTimeout(() => inky.dead = false, 2000)
-setTimeout(() => clyde.dead = false, 3000)
 
 window.addEventListener("keydown", (e) => {
     if (e.key === "w" || e.key === "ArrowUp") player.desiredDirection = dir.UP

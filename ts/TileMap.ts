@@ -39,13 +39,11 @@ class TileMap {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     ]
     static map = TileMap.INIT_MAP.map((row) => row.slice())
-    static totalDots = 244
 
     constructor() { }
 
     static reset() {
         TileMap.map = TileMap.INIT_MAP.map((row) => row.slice())
-        TileMap.totalDots = 244
     }
 
     static toTileSize(x: number): number {

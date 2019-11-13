@@ -3,13 +3,22 @@ class Inky extends Ghost {
     protected color = "lightblue"
     protected scatterX = 27
     protected scatterY = 35
+    protected dotLimit = 30
+    protected waitX = 11.5
 
     private offsetX: number
     private offsetY: number
 
     constructor(x?: number, y?: number) {
         super(x, y)
+        this.setState(STATE.WAITING)
         this.updateOffset()
+    }
+
+    incDotCount() {
+        if (this.state === STATE.WAITING
+            && pinky.state !== STATE.WAITING)
+                this.dotCount++
     }
 
     updateTarget() {
