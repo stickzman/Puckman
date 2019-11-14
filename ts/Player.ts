@@ -6,9 +6,12 @@ class Player {
     private dotLimit = 244
 
     debug = false
+    god = false
     direction = dir.LEFT
     desiredDirection = this.direction
     dotCount = 0
+    dotTimer = 0
+    dotTimerLimit = 240
     tileX: number
     tileY: number
 
@@ -27,6 +30,8 @@ class Player {
         if (this.updateTilePos()) {
             var tile = TileMap.getTile(this.tileX, this.tileY)
             if (tile > 1) {
+                // Reset dotTimer
+                this.dotTimer = 0
                 //Don't move this frame if they ate a dot
                 ghosts.forEach((g) => g.incDotCount())
                 if (++this.dotCount >= this.dotLimit) {
@@ -70,17 +75,31 @@ class Player {
             // If they're trying to turn around, let them
             this.direction = this.desiredDirection
         }
+        this.checkCollision()
         if (this.frameHalt > 0) {
             this.frameHalt--
         } else {
+            //If the dot timer hits its limit, reset it and release the next waiting ghost
+            if (++this.dotTimer > this.dotTimerLimit) {
+                this.dotTimer = 0
+                ghosts.some((g) => {
+                    if (g.state === STATE.WAITING) {
+                        g.setState(STATE.EXITING)
+                        return true
+                    }
+                    return false
+                })
+            }
             this.move() // Update x, y pixel position
         }
-        //Check for collision
+    }
+
+    checkCollision() {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
                     g.setState(STATE.EATEN)
-                } else if (g.active) {
+                } else if (g.active && !this.god) {
                     globalFrameHalt = Infinity
                 }
             }

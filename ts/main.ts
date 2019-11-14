@@ -57,11 +57,12 @@ function tick() {
                 break
         }
 
-        c.fillStyle = "blue"
+        c.fillStyle = "rgb(0,0,150)"
         c.fillRect(0, 0, canvas.width, canvas.height)
 
         player.update()
         ghosts.forEach((g) => g.update())
+        player.checkCollision()
 
         TileMap.draw(c)
         player.draw(c)

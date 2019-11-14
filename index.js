@@ -442,9 +442,12 @@ class Player {
         this.frameHalt = 0;
         this.dotLimit = 244;
         this.debug = false;
+        this.god = false;
         this.direction = dir.LEFT;
         this.desiredDirection = this.direction;
         this.dotCount = 0;
+        this.dotTimer = 0;
+        this.dotTimerLimit = 240;
         this.setSpeed(speed);
         this.updateTilePos();
     }
@@ -457,6 +460,8 @@ class Player {
         if (this.updateTilePos()) {
             var tile = TileMap.getTile(this.tileX, this.tileY);
             if (tile > 1) {
+                // Reset dotTimer
+                this.dotTimer = 0;
                 //Don't move this frame if they ate a dot
                 ghosts.forEach((g) => g.incDotCount());
                 if (++this.dotCount >= this.dotLimit) {
@@ -503,19 +508,32 @@ class Player {
             // If they're trying to turn around, let them
             this.direction = this.desiredDirection;
         }
+        this.checkCollision();
         if (this.frameHalt > 0) {
             this.frameHalt--;
         }
         else {
+            //If the dot timer hits its limit, reset it and release the next waiting ghost
+            if (++this.dotTimer > this.dotTimerLimit) {
+                this.dotTimer = 0;
+                ghosts.some((g) => {
+                    if (g.state === STATE.WAITING) {
+                        g.setState(STATE.EXITING);
+                        return true;
+                    }
+                    return false;
+                });
+            }
             this.move(); // Update x, y pixel position
         }
-        //Check for collision
+    }
+    checkCollision() {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
                     g.setState(STATE.EATEN);
                 }
-                else if (g.active) {
+                else if (g.active && !this.god) {
                     globalFrameHalt = Infinity;
                 }
             }
@@ -716,10 +734,11 @@ function tick() {
                 setGlobalState(STATE.SCATTER);
                 break;
         }
-        c.fillStyle = "blue";
+        c.fillStyle = "rgb(0,0,150)";
         c.fillRect(0, 0, canvas.width, canvas.height);
         player.update();
         ghosts.forEach((g) => g.update());
+        player.checkCollision();
         TileMap.draw(c);
         player.draw(c);
         ghosts.forEach((g) => g.draw(c));
