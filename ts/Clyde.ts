@@ -3,12 +3,12 @@ class Clyde extends Ghost {
     protected color = "orange"
     protected scatterX = 0
     protected scatterY = 35
-    protected dotLimit = 60
     protected waitX = 15.5
+    dotLimit = 60
 
-    constructor(x?: number, y?: number) {
-        super(x, y)
-        this.setState(STATE.WAITING)
+    constructor() {
+        super()
+        this.reset()
     }
 
     incDotCount() {

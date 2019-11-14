@@ -13,11 +13,26 @@ class Player {
     dotCount = 0
     dotTimer = 0
     dotTimerLimit = 240
+    baseSpeed = 0.8
+    boostSpeed = 0.9
+    boostFrames = 0
+    x: number
+    y: number
     tileX: number
     tileY: number
 
-    constructor(public x = 13.5 * TILE_SIZE, public y = 26 * TILE_SIZE, speed = 0.8) {
-        this.setSpeed(speed)
+    constructor() {
+        this.reset()
+    }
+
+    reset() {
+        this.frameHalt = 0
+        this.dotCount = 0
+        this.dotTimer = 0
+        this.x = 13.5 * TILE_SIZE
+        this.y = 26 * TILE_SIZE
+        this.direction = dir.LEFT
+        this.setSpeed(this.baseSpeed)
         this.updateTilePos()
     }
 
@@ -27,23 +42,30 @@ class Player {
     }
 
     update() {
+        if (this.boostFrames > 0) {
+            if (--this.boostFrames <= 0) this.setSpeed(this.baseSpeed)
+            else this.setSpeed(this.boostSpeed)
+        }
         // Update game tile x, y position
         if (this.updateTilePos()) {
             var tile = TileMap.getTile(this.tileX, this.tileY)
+            // Did we eat a dot?
             if (tile > 1) {
-                // Reset dotTimer
                 this.dotTimer = 0
-                //Don't move this frame if they ate a dot
                 ghosts.forEach((g) => g.incDotCount())
+                // Check win
                 if (++this.dotCount >= this.dotLimit) {
                     console.log("You Win!!")
                     globalFrameHalt = Infinity
                 }
                 if (tile === 2) {
+                    // Small dot
                     this.frameHalt = 1
                 }
                 else if (tile === 3) {
+                    // Big dot
                     this.frameHalt = 3
+                    this.boostFrames = Ghost.maxFrightenedFrames
                     ghosts.forEach((g) => g.setState(STATE.FRIGHTENED))
                 }
                 TileMap.setTile(this.tileX, this.tileY, 1)
@@ -102,7 +124,9 @@ class Player {
                     globalFrameHalt = 60
                     g.setState(STATE.EATEN)
                 } else if (g.active && !this.god) {
+                    this.lives--
                     globalFrameHalt = 120
+                    resetReq = true
                 }
             }
         })

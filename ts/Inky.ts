@@ -3,15 +3,15 @@ class Inky extends Ghost {
     protected color = "lightblue"
     protected scatterX = 27
     protected scatterY = 35
-    protected dotLimit = 30
     protected waitX = 11.5
+    dotLimit = 30
 
     private offsetX: number
     private offsetY: number
 
-    constructor(x?: number, y?: number) {
-        super(x, y)
-        this.setState(STATE.WAITING)
+    constructor() {
+        super()
+        this.reset()
         this.updateOffset()
     }
 

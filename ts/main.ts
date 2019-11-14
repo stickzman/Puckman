@@ -15,6 +15,7 @@ let globalState = STATE.SCATTER
 let frameCount = 0
 let globalFrameHalt = 0
 let paused = false
+let resetReq = true
 const player = new Player()
 let blinky: Blinky, pinky: Pinky, inky: Inky, clyde: Clyde
 const ghosts = [
@@ -39,10 +40,20 @@ function setGlobalState(state: STATE) {
     })
 }
 
+function resetAll() {
+    player.reset()
+    ghosts.forEach((g) => g.reset())
+    resetReq = false
+}
+
 function tick() {
     if (globalFrameHalt > 0) {
         globalFrameHalt--
     } else if (!paused) {
+        if (resetReq) {
+            resetAll()
+            globalFrameHalt = 90
+        }
         switch (frameCount++) {
             case 420:
             case 2040:
@@ -62,7 +73,8 @@ function tick() {
 
         player.update()
         ghosts.forEach((g) => g.update())
-        player.checkCollision()
+        // If the player didn't hit anything, check again
+        if (!resetReq) player.checkCollision()
 
         TileMap.draw(c)
 

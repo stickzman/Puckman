@@ -3,28 +3,38 @@ class Ghost {
     protected readonly allDirections = [0, 1, 2, 3]
 
     protected color = "brown"
-    protected direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
     protected scatterX = 0
     protected scatterY = 0
     protected homeX = 13
     protected homeY = 14
     protected waitX = 13.5
     protected waitY = 17
-    protected dotLimit = 0
     protected dotCount = 0
     protected frightenedFrames = 0
-    protected pixPerFrame: number
     protected waitSpeed = 0.3 * MAX_SPEED
+    protected direction: dir
+    protected pixPerFrame: number
 
+    static maxFrightenedFrames = 720
     debug = false
     active = false
+    dotLimit = 0
+    normSpeed = 0.75
+    frightenedSpeed = 0.5
+    tunnelSpeed = 0.4
+    x = 13.5 * TILE_SIZE
+    y = 14 * TILE_SIZE
     targetX: number = 0
     targetY: number = 0
     tileX: number
     tileY: number
     state: STATE
 
-    constructor(public x = 13.5 * TILE_SIZE, public y = 14 * TILE_SIZE) {
+    constructor() { }
+
+    reset() {
+        this.dotCount = 0
+        this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
         this.setState(STATE.WAITING)
     }
 
@@ -97,7 +107,7 @@ class Ghost {
         switch (state) {
             case STATE.FRIGHTENED: {
                 if (!this.active) return
-                this.frightenedFrames = 720
+                this.frightenedFrames = Ghost.maxFrightenedFrames
                 break
             }
             case STATE.CHASE: {
@@ -140,11 +150,11 @@ class Ghost {
     protected updateSpeed() {
         // Tunnel speed penalty
         if (this.tileY === 17 && (this.tileX < 6 || this.tileX >= 22)) {
-            this.setSpeed(0.4)
+            this.setSpeed(this.tunnelSpeed)
         } else {
             switch (this.state) {
                 case STATE.FRIGHTENED: {
-                    this.setSpeed(0.5)
+                    this.setSpeed(this.frightenedSpeed)
                     break
                 }
                 case STATE.EATEN: {
@@ -152,7 +162,7 @@ class Ghost {
                     break
                 }
                 default: {
-                    this.setSpeed(0.75)
+                    this.setSpeed(this.normSpeed)
                 }
             }
         }

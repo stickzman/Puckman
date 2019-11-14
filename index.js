@@ -28,26 +28,32 @@ function shuffle(arr) {
 }
 /// <reference path="helper.ts"/>
 class Ghost {
-    constructor(x = 13.5 * TILE_SIZE, y = 14 * TILE_SIZE) {
-        this.x = x;
-        this.y = y;
+    constructor() {
         this.allDirections = [0, 1, 2, 3];
         this.color = "brown";
-        this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT;
         this.scatterX = 0;
         this.scatterY = 0;
         this.homeX = 13;
         this.homeY = 14;
         this.waitX = 13.5;
         this.waitY = 17;
-        this.dotLimit = 0;
         this.dotCount = 0;
         this.frightenedFrames = 0;
         this.waitSpeed = 0.3 * MAX_SPEED;
         this.debug = false;
         this.active = false;
+        this.dotLimit = 0;
+        this.normSpeed = 0.75;
+        this.frightenedSpeed = 0.5;
+        this.tunnelSpeed = 0.4;
+        this.x = 13.5 * TILE_SIZE;
+        this.y = 14 * TILE_SIZE;
         this.targetX = 0;
         this.targetY = 0;
+    }
+    reset() {
+        this.dotCount = 0;
+        this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT;
         this.setState(STATE.WAITING);
     }
     update() {
@@ -124,7 +130,7 @@ class Ghost {
             case STATE.FRIGHTENED: {
                 if (!this.active)
                     return;
-                this.frightenedFrames = 720;
+                this.frightenedFrames = Ghost.maxFrightenedFrames;
                 break;
             }
             case STATE.CHASE: {
@@ -165,12 +171,12 @@ class Ghost {
     updateSpeed() {
         // Tunnel speed penalty
         if (this.tileY === 17 && (this.tileX < 6 || this.tileX >= 22)) {
-            this.setSpeed(0.4);
+            this.setSpeed(this.tunnelSpeed);
         }
         else {
             switch (this.state) {
                 case STATE.FRIGHTENED: {
-                    this.setSpeed(0.5);
+                    this.setSpeed(this.frightenedSpeed);
                     break;
                 }
                 case STATE.EATEN: {
@@ -178,7 +184,7 @@ class Ghost {
                     break;
                 }
                 default: {
-                    this.setSpeed(0.75);
+                    this.setSpeed(this.normSpeed);
                 }
             }
         }
@@ -309,17 +315,22 @@ class Ghost {
         c.restore();
     }
 }
+Ghost.maxFrightenedFrames = 720;
 /// <reference path="Ghost.ts"/>
 class Blinky extends Ghost {
-    constructor(x = 13.5 * TILE_SIZE, y = 14 * TILE_SIZE) {
-        super(x, y);
+    constructor() {
+        super();
         this.color = "red";
         this.scatterX = 24;
         this.scatterY = 1;
-        this.x = x;
-        this.y = y;
-        this.updateTilePos();
+        this.reset();
+    }
+    reset() {
+        this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT;
+        this.x = 13.5 * TILE_SIZE;
+        this.y = 14 * TILE_SIZE;
         this.setState(globalState);
+        this.updateTilePos();
     }
     updateTarget() {
         if (this.state === STATE.CHASE) {
@@ -330,14 +341,14 @@ class Blinky extends Ghost {
 }
 /// <reference path="Ghost.ts"/>
 class Clyde extends Ghost {
-    constructor(x, y) {
-        super(x, y);
+    constructor() {
+        super();
         this.color = "orange";
         this.scatterX = 0;
         this.scatterY = 35;
-        this.dotLimit = 60;
         this.waitX = 15.5;
-        this.setState(STATE.WAITING);
+        this.dotLimit = 60;
+        this.reset();
     }
     incDotCount() {
         if (this.state === STATE.WAITING
@@ -360,14 +371,14 @@ class Clyde extends Ghost {
 }
 /// <reference path="Ghost.ts"/>
 class Inky extends Ghost {
-    constructor(x, y) {
-        super(x, y);
+    constructor() {
+        super();
         this.color = "lightblue";
         this.scatterX = 27;
         this.scatterY = 35;
-        this.dotLimit = 30;
         this.waitX = 11.5;
-        this.setState(STATE.WAITING);
+        this.dotLimit = 30;
+        this.reset();
         this.updateOffset();
     }
     incDotCount() {
@@ -409,11 +420,12 @@ class Inky extends Ghost {
 }
 /// <reference path="Ghost.ts"/>
 class Pinky extends Ghost {
-    constructor(x, y) {
-        super(x, y);
+    constructor() {
+        super();
         this.color = "pink";
         this.scatterX = 4;
         this.scatterY = 1;
+        this.reset();
     }
     updateTarget() {
         if (this.state === STATE.CHASE) {
@@ -444,9 +456,7 @@ class Pinky extends Ghost {
 }
 /// <reference path="helper.ts"/>
 class Player {
-    constructor(x = 13.5 * TILE_SIZE, y = 26 * TILE_SIZE, speed = 0.8) {
-        this.x = x;
-        this.y = y;
+    constructor() {
         this.color = "yellow";
         this.frameHalt = 0;
         this.dotLimit = 244;
@@ -458,7 +468,19 @@ class Player {
         this.dotCount = 0;
         this.dotTimer = 0;
         this.dotTimerLimit = 240;
-        this.setSpeed(speed);
+        this.baseSpeed = 0.8;
+        this.boostSpeed = 0.9;
+        this.boostFrames = 0;
+        this.reset();
+    }
+    reset() {
+        this.frameHalt = 0;
+        this.dotCount = 0;
+        this.dotTimer = 0;
+        this.x = 13.5 * TILE_SIZE;
+        this.y = 26 * TILE_SIZE;
+        this.direction = dir.LEFT;
+        this.setSpeed(this.baseSpeed);
         this.updateTilePos();
     }
     setSpeed(speed) {
@@ -466,23 +488,32 @@ class Player {
         this.pixPerFrame = speed * MAX_SPEED;
     }
     update() {
+        if (this.boostFrames > 0) {
+            if (--this.boostFrames <= 0)
+                this.setSpeed(this.baseSpeed);
+            else
+                this.setSpeed(this.boostSpeed);
+        }
         // Update game tile x, y position
         if (this.updateTilePos()) {
             var tile = TileMap.getTile(this.tileX, this.tileY);
+            // Did we eat a dot?
             if (tile > 1) {
-                // Reset dotTimer
                 this.dotTimer = 0;
-                //Don't move this frame if they ate a dot
                 ghosts.forEach((g) => g.incDotCount());
+                // Check win
                 if (++this.dotCount >= this.dotLimit) {
                     console.log("You Win!!");
                     globalFrameHalt = Infinity;
                 }
                 if (tile === 2) {
+                    // Small dot
                     this.frameHalt = 1;
                 }
                 else if (tile === 3) {
+                    // Big dot
                     this.frameHalt = 3;
+                    this.boostFrames = Ghost.maxFrightenedFrames;
                     ghosts.forEach((g) => g.setState(STATE.FRIGHTENED));
                 }
                 TileMap.setTile(this.tileX, this.tileY, 1);
@@ -545,7 +576,9 @@ class Player {
                     g.setState(STATE.EATEN);
                 }
                 else if (g.active && !this.god) {
+                    this.lives--;
                     globalFrameHalt = 120;
+                    resetReq = true;
                 }
             }
         });
@@ -709,6 +742,7 @@ let globalState = STATE.SCATTER;
 let frameCount = 0;
 let globalFrameHalt = 0;
 let paused = false;
+let resetReq = true;
 const player = new Player();
 let blinky, pinky, inky, clyde;
 const ghosts = [
@@ -736,11 +770,20 @@ function setGlobalState(state) {
             g.setState(state);
     });
 }
+function resetAll() {
+    player.reset();
+    ghosts.forEach((g) => g.reset());
+    resetReq = false;
+}
 function tick() {
     if (globalFrameHalt > 0) {
         globalFrameHalt--;
     }
     else if (!paused) {
+        if (resetReq) {
+            resetAll();
+            globalFrameHalt = 90;
+        }
         switch (frameCount++) {
             case 420:
             case 2040:
@@ -758,7 +801,9 @@ function tick() {
         c.fillRect(0, 0, canvas.width, canvas.height);
         player.update();
         ghosts.forEach((g) => g.update());
-        player.checkCollision();
+        // If the player didn't hit anything, check again
+        if (!resetReq)
+            player.checkCollision();
         TileMap.draw(c);
         //Draw UI Bars
         c.fillStyle = "#000";

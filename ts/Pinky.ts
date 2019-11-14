@@ -4,8 +4,9 @@ class Pinky extends Ghost {
     protected scatterX = 4
     protected scatterY = 1
 
-    constructor(x?: number, y?: number) {
-        super(x, y)
+    constructor() {
+        super()
+        this.reset()
     }
 
     updateTarget() {

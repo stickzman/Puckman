@@ -4,12 +4,17 @@ class Blinky extends Ghost {
     protected scatterX = 24
     protected scatterY = 1
 
-    constructor(x = 13.5 * TILE_SIZE, y = 14 * TILE_SIZE) {
-        super(x, y)
-        this.x = x
-        this.y = y
-        this.updateTilePos()
+    constructor() {
+        super()
+        this.reset()
+    }
+
+    reset() {
+        this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
+        this.x = 13.5 * TILE_SIZE
+        this.y = 14 * TILE_SIZE
         this.setState(globalState)
+        this.updateTilePos()
     }
 
     updateTarget() {
