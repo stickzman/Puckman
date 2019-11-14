@@ -43,6 +43,7 @@ class Ghost {
         this.dotLimit = 0;
         this.dotCount = 0;
         this.frightenedFrames = 0;
+        this.waitSpeed = 0.3 * MAX_SPEED;
         this.debug = false;
         this.active = false;
         this.targetX = 0;
@@ -99,11 +100,19 @@ class Ghost {
         this.move();
     }
     updateWaiting() {
-        if (this.dotCount < this.dotLimit ||
-            !ghosts.every((g) => g.state !== STATE.EXITING))
-            return;
-        this.dotCount = 0; // Reset the dot counter
-        this.setState(STATE.EXITING);
+        if ((this.y + Math.abs(this.waitSpeed) / 2) % TILE_SIZE < Math.abs(this.waitSpeed)) {
+            if (this.tileY === 16)
+                this.waitSpeed = Math.abs(this.waitSpeed);
+            if (this.tileY === 18)
+                this.waitSpeed = -1 * Math.abs(this.waitSpeed);
+        }
+        this.y += this.waitSpeed;
+        this.updateTilePos();
+        if (this.dotCount >= this.dotLimit
+            && ghosts.every((g) => g.state !== STATE.EXITING)) {
+            this.dotCount = 0; // Reset the dot counter
+            this.setState(STATE.EXITING);
+        }
     }
     incDotCount() {
         if (this.state === STATE.WAITING)
@@ -583,7 +592,9 @@ class Player {
     draw(c) {
         c.save();
         c.fillStyle = this.color;
-        c.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
+        c.beginPath();
+        c.arc(this.x + (TILE_SIZE / 2), this.y + (TILE_SIZE / 2), TILE_SIZE / 2, 0, Math.PI * 2);
+        c.fill();
         if (this.debug) {
             c.strokeStyle = "red";
             c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -651,9 +662,9 @@ TileMap.INIT_MAP = [
     [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0],
@@ -740,6 +751,11 @@ function tick() {
         ghosts.forEach((g) => g.update());
         player.checkCollision();
         TileMap.draw(c);
+        //Draw monster pen exit
+        c.fillStyle = "#000";
+        c.fillRect(13.5 * TILE_SIZE, 15 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        c.fillStyle = "#e2cba9";
+        c.fillRect(13.5 * TILE_SIZE, 15.25 * TILE_SIZE, TILE_SIZE, TILE_SIZE / 2);
         player.draw(c);
         ghosts.forEach((g) => g.draw(c));
     }

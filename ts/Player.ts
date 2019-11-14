@@ -145,7 +145,9 @@ class Player {
     draw(c: CanvasRenderingContext2D) {
         c.save()
         c.fillStyle = this.color
-        c.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE)
+        c.beginPath()
+        c.arc(this.x + (TILE_SIZE/2), this.y + (TILE_SIZE/2), TILE_SIZE/2, 0, Math.PI*2)
+        c.fill()
         if (this.debug) {
             c.strokeStyle = "red"
             c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE)

@@ -14,6 +14,7 @@ class Ghost {
     protected dotCount = 0
     protected frightenedFrames = 0
     protected pixPerFrame: number
+    protected waitSpeed = 0.3 * MAX_SPEED
 
     debug = false
     active = false
@@ -74,11 +75,17 @@ class Ghost {
     }
 
     updateWaiting() {
-        if (this.dotCount < this.dotLimit ||
-            !ghosts.every((g) => g.state !== STATE.EXITING))
-                return
-        this.dotCount = 0 // Reset the dot counter
-        this.setState(STATE.EXITING)
+        if ((this.y + Math.abs(this.waitSpeed)/2) % TILE_SIZE < Math.abs(this.waitSpeed)) {
+            if (this.tileY === 16) this.waitSpeed = Math.abs(this.waitSpeed)
+            if (this.tileY === 18) this.waitSpeed = -1*Math.abs(this.waitSpeed)
+        }
+        this.y += this.waitSpeed
+        this.updateTilePos()
+        if (this.dotCount >= this.dotLimit
+                && ghosts.every((g) => g.state !== STATE.EXITING)) {
+            this.dotCount = 0 // Reset the dot counter
+            this.setState(STATE.EXITING)
+        }
     }
 
     incDotCount() {

@@ -65,6 +65,13 @@ function tick() {
         player.checkCollision()
 
         TileMap.draw(c)
+        
+        //Draw monster pen exit
+        c.fillStyle = "#000"
+        c.fillRect(13.5*TILE_SIZE, 15*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+        c.fillStyle = "#e2cba9"
+        c.fillRect(13.5*TILE_SIZE, 15.25*TILE_SIZE, TILE_SIZE, TILE_SIZE/2)
+
         player.draw(c)
         ghosts.forEach((g) => g.draw(c))
     }
