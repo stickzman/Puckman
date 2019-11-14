@@ -452,6 +452,7 @@ class Player {
         this.dotLimit = 244;
         this.debug = false;
         this.god = false;
+        this.lives = 3;
         this.direction = dir.LEFT;
         this.desiredDirection = this.direction;
         this.dotCount = 0;
@@ -540,10 +541,11 @@ class Player {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
+                    globalFrameHalt = 60;
                     g.setState(STATE.EATEN);
                 }
                 else if (g.active && !this.god) {
-                    globalFrameHalt = Infinity;
+                    globalFrameHalt = 120;
                 }
             }
         });
@@ -591,10 +593,17 @@ class Player {
     }
     draw(c) {
         c.save();
+        //Draw character
         c.fillStyle = this.color;
         c.beginPath();
         c.arc(this.x + (TILE_SIZE / 2), this.y + (TILE_SIZE / 2), TILE_SIZE / 2, 0, Math.PI * 2);
         c.fill();
+        //Draw lives
+        for (let i = 0; i < this.lives; i++) {
+            c.beginPath();
+            c.arc(2 * TILE_SIZE * (i + 1), 35 * TILE_SIZE, TILE_SIZE * 0.75, 0, Math.PI * 2);
+            c.fill();
+        }
         if (this.debug) {
             c.strokeStyle = "red";
             c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -751,8 +760,11 @@ function tick() {
         ghosts.forEach((g) => g.update());
         player.checkCollision();
         TileMap.draw(c);
-        //Draw monster pen exit
+        //Draw UI Bars
         c.fillStyle = "#000";
+        c.fillRect(0, 0, 28 * TILE_SIZE, 3 * TILE_SIZE);
+        c.fillRect(0, 34 * TILE_SIZE, 28 * TILE_SIZE, 2 * TILE_SIZE);
+        //Draw monster pen exit
         c.fillRect(13.5 * TILE_SIZE, 15 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         c.fillStyle = "#e2cba9";
         c.fillRect(13.5 * TILE_SIZE, 15.25 * TILE_SIZE, TILE_SIZE, TILE_SIZE / 2);

@@ -65,9 +65,13 @@ function tick() {
         player.checkCollision()
 
         TileMap.draw(c)
-        
-        //Draw monster pen exit
+
+        //Draw UI Bars
         c.fillStyle = "#000"
+        c.fillRect(0, 0, 28*TILE_SIZE, 3*TILE_SIZE)
+        c.fillRect(0, 34*TILE_SIZE, 28*TILE_SIZE, 2*TILE_SIZE)
+
+        //Draw monster pen exit
         c.fillRect(13.5*TILE_SIZE, 15*TILE_SIZE, TILE_SIZE, TILE_SIZE)
         c.fillStyle = "#e2cba9"
         c.fillRect(13.5*TILE_SIZE, 15.25*TILE_SIZE, TILE_SIZE, TILE_SIZE/2)

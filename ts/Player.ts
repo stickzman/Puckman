@@ -7,6 +7,7 @@ class Player {
 
     debug = false
     god = false
+    lives = 3
     direction = dir.LEFT
     desiredDirection = this.direction
     dotCount = 0
@@ -98,9 +99,10 @@ class Player {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
+                    globalFrameHalt = 60
                     g.setState(STATE.EATEN)
                 } else if (g.active && !this.god) {
-                    globalFrameHalt = Infinity
+                    globalFrameHalt = 120
                 }
             }
         })
@@ -144,10 +146,21 @@ class Player {
 
     draw(c: CanvasRenderingContext2D) {
         c.save()
+
+        //Draw character
         c.fillStyle = this.color
         c.beginPath()
         c.arc(this.x + (TILE_SIZE/2), this.y + (TILE_SIZE/2), TILE_SIZE/2, 0, Math.PI*2)
         c.fill()
+
+        //Draw lives
+        for (let i = 0; i < this.lives; i++) {
+            c.beginPath()
+            c.arc(2*TILE_SIZE*(i+1), 35 * TILE_SIZE, TILE_SIZE*0.75, 0, Math.PI*2)
+            c.fill()
+        }
+
+
         if (this.debug) {
             c.strokeStyle = "red"
             c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE)
