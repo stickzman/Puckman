@@ -6,6 +6,27 @@
 /// <reference path="Pinky.ts"/>
 /// <reference path="Inky.ts"/>
 /// <reference path="Clyde.ts"/>
+const gameOverScreen = <HTMLElement>document.querySelector(".gameOverScreen")
+const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
+let startGameIntCount = 0
+const startGameInt = setInterval(() => {
+    switch (++startGameIntCount) {
+        case 0: {
+            gameOverText.textContent = "PUSH START!";
+            gameOverText.style.display = "block";
+            break;
+        }
+        case 1: gameOverText.style.display = "none"; break;
+        case 2: {
+            gameOverText.textContent = "PRESS ENTER!";
+            gameOverText.style.display = "block";
+            break;
+        }
+        case 3: gameOverText.style.display = "none"; startGameIntCount = -1; break;
+
+    }
+}, 1000)
+
 const canvas = <HTMLCanvasElement>document.getElementById("canvas")
 canvas.height = 36 * TILE_SIZE
 canvas.width = 28 * TILE_SIZE
@@ -13,8 +34,6 @@ const c = canvas.getContext("2d")
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body")
 body.style.fontSize = TILE_SIZE + "px"
-const gameOverScreen = <HTMLElement>document.querySelector(".gameOverScreen")
-const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
 const readyLabel = <HTMLElement>document.querySelector(".ready")
 const scoreElem = document.querySelector(".score")
 const highscoreElem = document.querySelector(".highscore")
@@ -50,7 +69,8 @@ window.addEventListener("keydown", (e) => {
         if (e.key === "a" || e.key === "ArrowLeft") player.desiredDirection = dir.LEFT
         if (e.key === "s" || e.key === "ArrowDown") player.desiredDirection = dir.DOWN
         if (e.key === "d" || e.key === "ArrowRight") player.desiredDirection = dir.RIGHT
-    } else {
+    } else if (e.key === "Enter" || e.key === " ")  {
+        if (startGameInt) clearInterval(startGameInt)
         gameOverScreen.style.display = "none"
         resetGame()
     }
@@ -68,6 +88,16 @@ window.addEventListener("beforeunload", () => {
         console.error(e)
     }
 })
+
+function flash(totalTime: number, delay = 0) {
+    setTimeout(() => {
+        let i = 0
+        const interval = setInterval(() => {
+            draw((++i % 2 === 0) ? "rgb(0,0,150)" : "rgb(150,150,150)")
+        }, 175)
+        setTimeout(() => clearInterval(interval), totalTime)
+    }, delay)
+}
 
 function setLevel(l: number) {
     level = l
@@ -145,8 +175,8 @@ function tick() {
     window.requestAnimationFrame(tick)
 }
 
-function draw() {
-    c.fillStyle = "rgb(0,0,150)"
+function draw(bkgColor = "rgb(0,0,150)") {
+    c.fillStyle = bkgColor
     c.fillRect(0, 0, canvas.width, canvas.height)
     TileMap.draw(c)
 

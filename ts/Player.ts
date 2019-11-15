@@ -8,7 +8,7 @@ class Player {
     debug = false
     god = false
     lives = 3
-    direction = dir.LEFT
+    direction = dir.RIGHT
     desiredDirection = this.direction
     dotCount = 0
     elroy1Limit = 224
@@ -105,8 +105,9 @@ class Player {
                 } else if (this.dotCount === this.elroy2Limit) {
                     blinky.setElroy(2)
                 } else if (this.dotCount >= this.dotLimit) {
-                    globalFrameHalt = 120
+                    globalFrameHalt = 180
                     setLevel(level+1)
+                    flash(1500, 1500)
                 }
                 if (tile === 2) {
                     // Small dot

@@ -12,7 +12,7 @@ class Blinky extends Ghost {
 
     setElroy(e: number) {
         this.elroy = e
-        if (this.active && this.state !== STATE.CHASE) this.setState(STATE.CHASE)
+        if (this.state === STATE.SCATTER) this.setState(STATE.CHASE)
     }
 
     reset() {

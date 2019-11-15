@@ -391,7 +391,7 @@ class Blinky extends Ghost {
     }
     setElroy(e) {
         this.elroy = e;
-        if (this.active && this.state !== STATE.CHASE)
+        if (this.state === STATE.SCATTER)
             this.setState(STATE.CHASE);
     }
     reset() {
@@ -623,7 +623,7 @@ class Player {
         this.debug = false;
         this.god = false;
         this.lives = 3;
-        this.direction = dir.LEFT;
+        this.direction = dir.RIGHT;
         this.desiredDirection = this.direction;
         this.dotCount = 0;
         this.elroy1Limit = 224;
@@ -724,8 +724,9 @@ class Player {
                     blinky.setElroy(2);
                 }
                 else if (this.dotCount >= this.dotLimit) {
-                    globalFrameHalt = 120;
+                    globalFrameHalt = 180;
                     setLevel(level + 1);
+                    flash(1500, 1500);
                 }
                 if (tile === 2) {
                     // Small dot
@@ -895,7 +896,7 @@ class TileMap {
     }
     static draw(ctx) {
         if (frameCount % 10 === 0)
-            TileMap.flash = !TileMap.flash;
+            TileMap.flashDot = !TileMap.flashDot;
         ctx.save();
         this.map.forEach((row, tileJ) => {
             row.forEach((tile, tileI) => {
@@ -911,7 +912,7 @@ class TileMap {
                     ctx.fill();
                 }
                 else if (tile === 3) {
-                    ctx.fillStyle = (TileMap.flash) ? "rgb(255,200,200)" : "#000";
+                    ctx.fillStyle = (TileMap.flashDot) ? "rgb(255,200,200)" : "#000";
                     ctx.beginPath();
                     ctx.arc(tileI * TILE_SIZE + (TILE_SIZE / 2), tileJ * TILE_SIZE + (TILE_SIZE / 2), TILE_SIZE * 0.4, 0, 2 * Math.PI);
                     ctx.fill();
@@ -921,7 +922,7 @@ class TileMap {
         ctx.restore();
     }
 }
-TileMap.flash = false;
+TileMap.flashDot = false;
 TileMap.INIT_MAP = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -969,6 +970,30 @@ TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
 /// <reference path="Pinky.ts"/>
 /// <reference path="Inky.ts"/>
 /// <reference path="Clyde.ts"/>
+const gameOverScreen = document.querySelector(".gameOverScreen");
+const gameOverText = document.querySelector(".gameOverText");
+let startGameIntCount = 0;
+const startGameInt = setInterval(() => {
+    switch (++startGameIntCount) {
+        case 0: {
+            gameOverText.textContent = "PUSH START!";
+            gameOverText.style.display = "block";
+            break;
+        }
+        case 1:
+            gameOverText.style.display = "none";
+            break;
+        case 2: {
+            gameOverText.textContent = "PRESS ENTER!";
+            gameOverText.style.display = "block";
+            break;
+        }
+        case 3:
+            gameOverText.style.display = "none";
+            startGameIntCount = -1;
+            break;
+    }
+}, 1000);
 const canvas = document.getElementById("canvas");
 canvas.height = 36 * TILE_SIZE;
 canvas.width = 28 * TILE_SIZE;
@@ -976,8 +1001,6 @@ const c = canvas.getContext("2d");
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body");
 body.style.fontSize = TILE_SIZE + "px";
-const gameOverScreen = document.querySelector(".gameOverScreen");
-const gameOverText = document.querySelector(".gameOverText");
 const readyLabel = document.querySelector(".ready");
 const scoreElem = document.querySelector(".score");
 const highscoreElem = document.querySelector(".highscore");
@@ -1018,7 +1041,9 @@ window.addEventListener("keydown", (e) => {
         if (e.key === "d" || e.key === "ArrowRight")
             player.desiredDirection = dir.RIGHT;
     }
-    else {
+    else if (e.key === "Enter" || e.key === " ") {
+        if (startGameInt)
+            clearInterval(startGameInt);
         gameOverScreen.style.display = "none";
         resetGame();
     }
@@ -1035,6 +1060,15 @@ window.addEventListener("beforeunload", () => {
         console.error(e);
     }
 });
+function flash(totalTime, delay = 0) {
+    setTimeout(() => {
+        let i = 0;
+        const interval = setInterval(() => {
+            draw((++i % 2 === 0) ? "rgb(0,0,150)" : "rgb(150,150,150)");
+        }, 175);
+        setTimeout(() => clearInterval(interval), totalTime);
+    }, delay);
+}
 function setLevel(l) {
     level = l;
     if (level === 1) {
@@ -1112,8 +1146,8 @@ function tick() {
     }
     window.requestAnimationFrame(tick);
 }
-function draw() {
-    c.fillStyle = "rgb(0,0,150)";
+function draw(bkgColor = "rgb(0,0,150)") {
+    c.fillStyle = bkgColor;
     c.fillRect(0, 0, canvas.width, canvas.height);
     TileMap.draw(c);
     //Draw UI Bars
