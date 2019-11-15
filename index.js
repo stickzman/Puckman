@@ -39,6 +39,7 @@ class Ghost {
         this.waitY = 17;
         this.dotCount = 0;
         this.frightenedFrames = 0;
+        this.frightenedFlash = false;
         this.waitSpeed = 0.3 * MAX_SPEED;
         this.debug = false;
         this.active = false;
@@ -351,9 +352,17 @@ class Ghost {
     draw(c) {
         c.save();
         switch (this.state) {
-            case STATE.FRIGHTENED:
-                c.fillStyle = "blue";
+            case STATE.FRIGHTENED: {
+                if (this.frightenedFrames < Ghost.maxFrightenedFrames / 3) {
+                    if (frameCount % 10 === 0)
+                        this.frightenedFlash = !this.frightenedFlash;
+                }
+                else {
+                    this.frightenedFlash = false;
+                }
+                c.fillStyle = (this.frightenedFlash) ? "#fff" : "blue";
                 break;
+            }
             case STATE.EATEN:
                 c.fillStyle = "rgba(0,0,255,0.5)";
                 break;
@@ -885,6 +894,8 @@ class TileMap {
         this.map[y][x] = val;
     }
     static draw(ctx) {
+        if (frameCount % 10 === 0)
+            TileMap.flash = !TileMap.flash;
         ctx.save();
         this.map.forEach((row, tileJ) => {
             row.forEach((tile, tileI) => {
@@ -900,8 +911,9 @@ class TileMap {
                     ctx.fill();
                 }
                 else if (tile === 3) {
+                    ctx.fillStyle = (TileMap.flash) ? "rgb(255,200,200)" : "#000";
                     ctx.beginPath();
-                    ctx.arc(tileI * TILE_SIZE + (TILE_SIZE / 2), tileJ * TILE_SIZE + (TILE_SIZE / 2), TILE_SIZE / 2, 0, 2 * Math.PI);
+                    ctx.arc(tileI * TILE_SIZE + (TILE_SIZE / 2), tileJ * TILE_SIZE + (TILE_SIZE / 2), TILE_SIZE * 0.4, 0, 2 * Math.PI);
                     ctx.fill();
                 }
             });
@@ -909,6 +921,7 @@ class TileMap {
         ctx.restore();
     }
 }
+TileMap.flash = false;
 TileMap.INIT_MAP = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

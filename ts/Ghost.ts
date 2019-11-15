@@ -11,6 +11,7 @@ class Ghost {
     protected waitY = 17
     protected dotCount = 0
     protected frightenedFrames = 0
+    protected frightenedFlash = false
     protected waitSpeed = 0.3 * MAX_SPEED
     protected direction: dir
     protected pixPerFrame: number
@@ -312,7 +313,16 @@ class Ghost {
     draw(c: CanvasRenderingContext2D) {
         c.save()
         switch (this.state) {
-            case STATE.FRIGHTENED: c.fillStyle = "blue"; break;
+            case STATE.FRIGHTENED: {
+                if (this.frightenedFrames < Ghost.maxFrightenedFrames/3) {
+                    if (frameCount % 10 === 0)
+                        this.frightenedFlash = !this.frightenedFlash
+                } else {
+                    this.frightenedFlash = false
+                }
+                c.fillStyle = (this.frightenedFlash) ? "#fff" : "blue"
+                break
+            }
             case STATE.EATEN: c.fillStyle = "rgba(0,0,255,0.5)"; break;
             default: c.fillStyle = this.color
         }

@@ -1,5 +1,6 @@
 /// <reference path="helper.ts"/>
 class TileMap {
+    static flash = false
     static readonly INIT_MAP = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -64,6 +65,8 @@ class TileMap {
     }
 
     static draw(ctx: CanvasRenderingContext2D) {
+        if (frameCount % 10 === 0) TileMap.flash = !TileMap.flash
+
         ctx.save()
         this.map.forEach((row, tileJ) => {
             row.forEach((tile, tileI) => {
@@ -80,10 +83,11 @@ class TileMap {
                             TILE_SIZE/5, 0, 2 * Math.PI)
                     ctx.fill()
                 } else if (tile === 3) {
+                    ctx.fillStyle = (TileMap.flash) ? "rgb(255,200,200)" : "#000"
                     ctx.beginPath()
                     ctx.arc(tileI * TILE_SIZE + (TILE_SIZE/2),
-                    tileJ * TILE_SIZE + (TILE_SIZE/2),
-                    TILE_SIZE/2, 0, 2 * Math.PI)
+                            tileJ * TILE_SIZE + (TILE_SIZE/2),
+                            TILE_SIZE*0.4, 0, 2 * Math.PI)
                     ctx.fill()
                 }
             })
