@@ -13,6 +13,8 @@ const c = canvas.getContext("2d")
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body")
 body.style.fontSize = TILE_SIZE + "px"
+const gameOverScreen = <HTMLElement>document.querySelector(".gameOverScreen")
+const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
 const readyLabel = <HTMLElement>document.querySelector(".ready")
 const scoreElem = document.querySelector(".score")
 const highscoreElem = document.querySelector(".highscore")
@@ -31,6 +33,7 @@ let frameCount = 0
 let globalFrameHalt = 0
 let paused = false
 let resetReq = true
+let running = false
 const player = new Player()
 let blinky: Blinky, pinky: Pinky, inky: Inky, clyde: Clyde
 const ghosts = [
@@ -41,11 +44,16 @@ const ghosts = [
 ]
 
 window.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === "Escape") paused = !paused
-    if (e.key === "w" || e.key === "ArrowUp") player.desiredDirection = dir.UP
-    if (e.key === "a" || e.key === "ArrowLeft") player.desiredDirection = dir.LEFT
-    if (e.key === "s" || e.key === "ArrowDown") player.desiredDirection = dir.DOWN
-    if (e.key === "d" || e.key === "ArrowRight") player.desiredDirection = dir.RIGHT
+    if (running) {
+        if (e.key === "Enter" || e.key === "Escape") paused = !paused
+        if (e.key === "w" || e.key === "ArrowUp") player.desiredDirection = dir.UP
+        if (e.key === "a" || e.key === "ArrowLeft") player.desiredDirection = dir.LEFT
+        if (e.key === "s" || e.key === "ArrowDown") player.desiredDirection = dir.DOWN
+        if (e.key === "d" || e.key === "ArrowRight") player.desiredDirection = dir.RIGHT
+    } else {
+        gameOverScreen.style.display = "none"
+        resetGame()
+    }
 })
 
 window.addEventListener("resize", () => {
@@ -91,6 +99,17 @@ function addPoints(points: number) {
     }
 }
 
+function resetGame() {
+    score = 0
+    player.lives = 3
+    scoreElem.textContent = score.toString()
+    setLevel(1)
+    if (!running) {
+        running = true
+        tick()
+    }
+}
+
 function resetAll() {
     readyLabel.style.display = "block"
     setTimeout(() => { readyLabel.style.display = "none" }, 2000)
@@ -102,6 +121,7 @@ function resetAll() {
 }
 
 function tick() {
+    if (!running) return
     if (globalFrameHalt > 0) {
         globalFrameHalt--
     } else if (resetReq) {
@@ -124,7 +144,6 @@ function tick() {
 
     window.requestAnimationFrame(tick)
 }
-tick()
 
 function draw() {
     c.fillStyle = "rgb(0,0,150)"

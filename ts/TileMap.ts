@@ -44,6 +44,7 @@ class TileMap {
 
     static reset() {
         TileMap.map = TileMap.INIT_MAP.map((row) => row.slice())
+        player.dotCount = 0
     }
 
     static toTileSize(x: number): number {

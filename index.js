@@ -678,7 +678,6 @@ class Player {
             this.elroy1Limit = 124;
             this.elroy2Limit = 184;
         }
-        this.dotCount = 0;
         this.frameHalt = 0;
         this.dotTimer = 0;
         this.x = 13.5 * TILE_SIZE;
@@ -792,7 +791,13 @@ class Player {
                     g.setState(STATE.EATEN);
                 }
                 else if (g.active && !this.god) {
-                    this.lives--;
+                    if (--this.lives <= 0) {
+                        setTimeout(() => {
+                            gameOverText.textContent = "GAME OVER";
+                            gameOverScreen.style.display = "block";
+                            running = false;
+                        }, 1666);
+                    }
                     globalFrameHalt = 100;
                     resetReq = true;
                 }
@@ -865,6 +870,7 @@ class TileMap {
     constructor() { }
     static reset() {
         TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
+        player.dotCount = 0;
     }
     static toTileSize(x) {
         return Math.round(x / TILE_SIZE);
@@ -957,6 +963,8 @@ const c = canvas.getContext("2d");
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body");
 body.style.fontSize = TILE_SIZE + "px";
+const gameOverScreen = document.querySelector(".gameOverScreen");
+const gameOverText = document.querySelector(".gameOverText");
 const readyLabel = document.querySelector(".ready");
 const scoreElem = document.querySelector(".score");
 const highscoreElem = document.querySelector(".highscore");
@@ -975,6 +983,7 @@ let frameCount = 0;
 let globalFrameHalt = 0;
 let paused = false;
 let resetReq = true;
+let running = false;
 const player = new Player();
 let blinky, pinky, inky, clyde;
 const ghosts = [
@@ -984,16 +993,22 @@ const ghosts = [
     clyde = new Clyde()
 ];
 window.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === "Escape")
-        paused = !paused;
-    if (e.key === "w" || e.key === "ArrowUp")
-        player.desiredDirection = dir.UP;
-    if (e.key === "a" || e.key === "ArrowLeft")
-        player.desiredDirection = dir.LEFT;
-    if (e.key === "s" || e.key === "ArrowDown")
-        player.desiredDirection = dir.DOWN;
-    if (e.key === "d" || e.key === "ArrowRight")
-        player.desiredDirection = dir.RIGHT;
+    if (running) {
+        if (e.key === "Enter" || e.key === "Escape")
+            paused = !paused;
+        if (e.key === "w" || e.key === "ArrowUp")
+            player.desiredDirection = dir.UP;
+        if (e.key === "a" || e.key === "ArrowLeft")
+            player.desiredDirection = dir.LEFT;
+        if (e.key === "s" || e.key === "ArrowDown")
+            player.desiredDirection = dir.DOWN;
+        if (e.key === "d" || e.key === "ArrowRight")
+            player.desiredDirection = dir.RIGHT;
+    }
+    else {
+        gameOverScreen.style.display = "none";
+        resetGame();
+    }
 });
 window.addEventListener("resize", () => {
     //Adjust UI font-size
@@ -1038,6 +1053,16 @@ function addPoints(points) {
         highscoreElem.textContent = score.toString();
     }
 }
+function resetGame() {
+    score = 0;
+    player.lives = 3;
+    scoreElem.textContent = score.toString();
+    setLevel(1);
+    if (!running) {
+        running = true;
+        tick();
+    }
+}
 function resetAll() {
     readyLabel.style.display = "block";
     setTimeout(() => { readyLabel.style.display = "none"; }, 2000);
@@ -1048,6 +1073,8 @@ function resetAll() {
     resetReq = false;
 }
 function tick() {
+    if (!running)
+        return;
     if (globalFrameHalt > 0) {
         globalFrameHalt--;
     }
@@ -1072,7 +1099,6 @@ function tick() {
     }
     window.requestAnimationFrame(tick);
 }
-tick();
 function draw() {
     c.fillStyle = "rgb(0,0,150)";
     c.fillRect(0, 0, canvas.width, canvas.height);

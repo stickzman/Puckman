@@ -69,7 +69,6 @@ class Player {
             this.elroy1Limit = 124
             this.elroy2Limit = 184
         }
-        this.dotCount = 0
         this.frameHalt = 0
         this.dotTimer = 0
         this.x = 13.5 * TILE_SIZE
@@ -178,7 +177,13 @@ class Player {
                     globalFrameHalt = 60
                     g.setState(STATE.EATEN)
                 } else if (g.active && !this.god) {
-                    this.lives--
+                    if (--this.lives <= 0) {
+                        setTimeout(() => {
+                            gameOverText.textContent = "GAME OVER"
+                            gameOverScreen.style.display = "block"
+                            running = false
+                        }, 1666)
+                    }
                     globalFrameHalt = 100
                     resetReq = true
                 }

@@ -11,7 +11,7 @@
                 margin: 0px;
                 text-align: center;
                 text-transform: capitalize;
-                font-size: 2.77vh;  /* TILE_SIZE percentage */
+                user-select: none;
                 font-family: "Press Start 2P", monospace;
             }
             .container {
@@ -28,9 +28,9 @@
                 height: 100vh;
                 max-height: 128vw;
             }
-            .ui {
+            .scoring {
                 position: absolute;
-                color: #FFF;
+                color: #fff;
             }
             .scoreLabel {
                 top: 1.5%;
@@ -53,19 +53,33 @@
                 width: 40%;
             }
             .ready {
+                display: none;
+                position: absolute;
                 color: #ffff00;
                 top: 56%;
                 left: 40%;
+            }
+            .gameOverScreen {
+                background: #000;
+                width: 100%;
+                height: 100%;
+            }
+            .gameOverText {
+                top: 50%;
+                width: 100%;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="ui scoreLabel">1UP</div>
-            <div class="ui score">0</div>
-            <div class="ui highscoreLabel">HIGH SCORE</div>
-            <div class="ui highscore">0</div>
-            <div class="ui ready">READY!</div>
+            <div class="scoring scoreLabel">1UP</div>
+            <div class="scoring score">0</div>
+            <div class="scoring highscoreLabel">HIGH SCORE</div>
+            <div class="scoring highscore">0</div>
+            <div class="gameOverScreen">
+                <div class="scoring gameOverText">PRESS START!</div>
+            </div>
+            <div class="ready">READY!</div>
             <canvas id="canvas" width="224" height="288"></canvas>
         </div>
         <script type="text/javascript" src="index.js"></script>
