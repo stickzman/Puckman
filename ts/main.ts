@@ -70,8 +70,6 @@ window.addEventListener("keydown", (e) => {
         if (e.key === "s" || e.key === "ArrowDown") player.desiredDirection = dir.DOWN
         if (e.key === "d" || e.key === "ArrowRight") player.desiredDirection = dir.RIGHT
     } else if (e.key === "Enter" || e.key === " ")  {
-        if (startGameInt) clearInterval(startGameInt)
-        gameOverScreen.style.display = "none"
         resetGame()
     }
 })
@@ -86,6 +84,35 @@ window.addEventListener("beforeunload", () => {
         localStorage.setItem("highscore", highscore.toString())
     } catch (e) {
         console.error(e)
+    }
+})
+
+let touchX: number
+let touchY: number
+window.addEventListener("touchstart", (e) => {
+    if (!running) resetGame()
+    let touch = e.touches[0]
+    touchX = touch.clientX
+    touchY = touch.clientY
+})
+
+window.addEventListener("touchmove", (e) => {
+    if (!running) return
+    const touch = e.touches[0]
+    const deltaX = touch.clientX - touchX
+    const deltaY = touch.clientY - touchY
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX > 0) {
+            player.desiredDirection = dir.RIGHT
+        } else {
+            player.desiredDirection = dir.LEFT
+        }
+    } else {
+        if (deltaY > 0) {
+            player.desiredDirection = dir.DOWN
+        } else {
+            player.desiredDirection = dir.UP
+        }
     }
 })
 
@@ -130,6 +157,8 @@ function addPoints(points: number) {
 }
 
 function resetGame() {
+    if (startGameInt) clearInterval(startGameInt)
+    gameOverScreen.style.display = "none"
     score = 0
     player.lives = 3
     scoreElem.textContent = score.toString()

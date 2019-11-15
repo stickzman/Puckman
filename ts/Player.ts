@@ -182,6 +182,7 @@ class Player {
                         setTimeout(() => {
                             gameOverText.textContent = "GAME OVER"
                             gameOverScreen.style.display = "block"
+                            gameOverText.style.display = "block"
                             running = false
                         }, 1666)
                     }
