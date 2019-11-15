@@ -724,9 +724,8 @@ class Player {
                     blinky.setElroy(2);
                 }
                 else if (this.dotCount >= this.dotLimit) {
-                    globalFrameHalt = 180;
-                    setLevel(level + 1);
-                    flash(1500, 1500);
+                    // You win!
+                    levelWin();
                 }
                 if (tile === 2) {
                     // Small dot
@@ -1090,14 +1089,18 @@ window.addEventListener("touchmove", (e) => {
         }
     }
 });
-function flash(totalTime, delay = 0) {
+function levelWin() {
+    globalFrameHalt = 180;
     setTimeout(() => {
         let i = 0;
         const interval = setInterval(() => {
             draw((++i % 2 === 0) ? "rgb(0,0,150)" : "rgb(150,150,150)");
         }, 175);
-        setTimeout(() => clearInterval(interval), totalTime);
-    }, delay);
+        setTimeout(() => {
+            setLevel(level + 1);
+            clearInterval(interval);
+        }, 1500);
+    }, 1500);
 }
 function setLevel(l) {
     level = l;

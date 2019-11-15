@@ -116,14 +116,18 @@ window.addEventListener("touchmove", (e) => {
     }
 })
 
-function flash(totalTime: number, delay = 0) {
+function levelWin() {
+    globalFrameHalt = 180
     setTimeout(() => {
         let i = 0
         const interval = setInterval(() => {
             draw((++i % 2 === 0) ? "rgb(0,0,150)" : "rgb(150,150,150)")
         }, 175)
-        setTimeout(() => clearInterval(interval), totalTime)
-    }, delay)
+        setTimeout(() => {
+            setLevel(level+1)
+            clearInterval(interval)
+        }, 1500)
+    }, 1500)
 }
 
 function setLevel(l: number) {

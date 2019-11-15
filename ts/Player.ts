@@ -105,9 +105,8 @@ class Player {
                 } else if (this.dotCount === this.elroy2Limit) {
                     blinky.setElroy(2)
                 } else if (this.dotCount >= this.dotLimit) {
-                    globalFrameHalt = 180
-                    setLevel(level+1)
-                    flash(1500, 1500)
+                    // You win!
+                    levelWin()
                 }
                 if (tile === 2) {
                     // Small dot
