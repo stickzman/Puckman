@@ -468,6 +468,7 @@ class Player {
         this.dotCount = 0;
         this.dotTimer = 0;
         this.dotTimerLimit = 240;
+        this.ghostsEaten = 0;
         this.baseSpeed = 0.8;
         this.boostSpeed = 0.9;
         this.boostFrames = 0;
@@ -489,8 +490,10 @@ class Player {
     }
     update() {
         if (this.boostFrames > 0) {
-            if (--this.boostFrames <= 0)
+            if (--this.boostFrames <= 0) {
+                this.ghostsEaten = 0;
                 this.setSpeed(this.baseSpeed);
+            }
             else
                 this.setSpeed(this.boostSpeed);
         }
@@ -508,10 +511,12 @@ class Player {
                 }
                 if (tile === 2) {
                     // Small dot
+                    addPoints(10);
                     this.frameHalt = 1;
                 }
                 else if (tile === 3) {
                     // Big dot
+                    addPoints(50);
                     this.frameHalt = 3;
                     this.boostFrames = Ghost.maxFrightenedFrames;
                     ghosts.forEach((g) => g.setState(STATE.FRIGHTENED));
@@ -572,12 +577,13 @@ class Player {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
+                    addPoints(Math.pow(2, ++this.ghostsEaten) * 100);
                     globalFrameHalt = 60;
                     g.setState(STATE.EATEN);
                 }
                 else if (g.active && !this.god) {
                     this.lives--;
-                    globalFrameHalt = 120;
+                    globalFrameHalt = 100;
                     resetReq = true;
                 }
             }
@@ -739,6 +745,7 @@ canvas.height = 36 * TILE_SIZE;
 canvas.width = 28 * TILE_SIZE;
 const c = canvas.getContext("2d");
 let globalState = STATE.SCATTER;
+let score = 0;
 let frameCount = 0;
 let globalFrameHalt = 0;
 let paused = false;
@@ -770,9 +777,16 @@ function setGlobalState(state) {
             g.setState(state);
     });
 }
+function addPoints(points) {
+    if (Math.floor(score / 10000) !== Math.floor((score + points) / 10000))
+        player.lives++;
+    score += points;
+}
 function resetAll() {
+    setGlobalState(STATE.SCATTER);
     player.reset();
     ghosts.forEach((g) => g.reset());
+    frameCount = 0;
     resetReq = false;
 }
 function tick() {

@@ -13,6 +13,7 @@ class Player {
     dotCount = 0
     dotTimer = 0
     dotTimerLimit = 240
+    ghostsEaten = 0
     baseSpeed = 0.8
     boostSpeed = 0.9
     boostFrames = 0
@@ -31,7 +32,7 @@ class Player {
         this.dotTimer = 0
         this.x = 13.5 * TILE_SIZE
         this.y = 26 * TILE_SIZE
-        this.direction = dir.LEFT
+        this.direction = dir.LEFT        
         this.setSpeed(this.baseSpeed)
         this.updateTilePos()
     }
@@ -43,7 +44,10 @@ class Player {
 
     update() {
         if (this.boostFrames > 0) {
-            if (--this.boostFrames <= 0) this.setSpeed(this.baseSpeed)
+            if (--this.boostFrames <= 0) {
+                this.ghostsEaten = 0
+                this.setSpeed(this.baseSpeed)
+            }
             else this.setSpeed(this.boostSpeed)
         }
         // Update game tile x, y position
@@ -60,10 +64,12 @@ class Player {
                 }
                 if (tile === 2) {
                     // Small dot
+                    addPoints(10)
                     this.frameHalt = 1
                 }
                 else if (tile === 3) {
                     // Big dot
+                    addPoints(50)
                     this.frameHalt = 3
                     this.boostFrames = Ghost.maxFrightenedFrames
                     ghosts.forEach((g) => g.setState(STATE.FRIGHTENED))
@@ -121,11 +127,12 @@ class Player {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
+                    addPoints(Math.pow(2, ++this.ghostsEaten) * 100)
                     globalFrameHalt = 60
                     g.setState(STATE.EATEN)
                 } else if (g.active && !this.god) {
                     this.lives--
-                    globalFrameHalt = 120
+                    globalFrameHalt = 100
                     resetReq = true
                 }
             }
@@ -183,7 +190,6 @@ class Player {
             c.arc(2*TILE_SIZE*(i+1), 35 * TILE_SIZE, TILE_SIZE*0.75, 0, Math.PI*2)
             c.fill()
         }
-
 
         if (this.debug) {
             c.strokeStyle = "red"

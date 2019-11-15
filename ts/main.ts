@@ -12,6 +12,7 @@ canvas.width = 28 * TILE_SIZE
 const c = canvas.getContext("2d")
 
 let globalState = STATE.SCATTER
+let score = 0
 let frameCount = 0
 let globalFrameHalt = 0
 let paused = false
@@ -40,9 +41,16 @@ function setGlobalState(state: STATE) {
     })
 }
 
+function addPoints(points: number) {
+    if (Math.floor(score/10000) !== Math.floor((score+points)/10000)) player.lives++
+    score += points
+}
+
 function resetAll() {
+    setGlobalState(STATE.SCATTER)
     player.reset()
     ghosts.forEach((g) => g.reset())
+    frameCount = 0
     resetReq = false
 }
 
