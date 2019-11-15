@@ -23,6 +23,8 @@ try {
     console.error(e)
 }
 
+let statePatterns = {CHASE: [420, 2040, 3540, 5040], SCATTER: [1620, 3240, 4740]}
+let level = 1
 let globalState = STATE.SCATTER
 let score = 0
 let frameCount = 0
@@ -59,6 +61,19 @@ window.addEventListener("beforeunload", () => {
     }
 })
 
+function setLevel(l: number) {
+    level = l
+    if (level === 1) {
+        statePatterns = {CHASE: [420, 2040, 3540, 5040], SCATTER: [1620, 3240, 4740]}
+    } else if (level <= 4) {
+        statePatterns = {CHASE: [420, 2040, 3540, 65521], SCATTER: [1620, 3240, 65520]}
+    } else {
+        statePatterns = {CHASE: [300, 1800, 3300, 65521], SCATTER: [1500, 3000, 65520]}
+    }
+    TileMap.reset()
+    resetReq = true
+}
+
 function setGlobalState(state: STATE) {
     globalState = state
     ghosts.forEach((g) => {
@@ -89,49 +104,43 @@ function resetAll() {
 function tick() {
     if (globalFrameHalt > 0) {
         globalFrameHalt--
+    } else if (resetReq) {
+        resetAll()
+        globalFrameHalt = 120
+        draw()
     } else if (!paused) {
-        if (resetReq) {
-            resetAll()
-            globalFrameHalt = 120
-        }
-        switch (frameCount++) {
-            case 420:
-            case 2040:
-            case 3540:
-            case 5040:
-                setGlobalState(STATE.CHASE)
-                break
-            case 1620:
-            case 3240:
-            case 4740:
-                setGlobalState(STATE.SCATTER)
-                break
-        }
-
-        c.fillStyle = "rgb(0,0,150)"
-        c.fillRect(0, 0, canvas.width, canvas.height)
+        frameCount++
+        if (statePatterns.CHASE.includes(frameCount)) setGlobalState(STATE.CHASE)
+        else if (statePatterns.SCATTER.includes(frameCount)) setGlobalState(STATE.SCATTER)
 
         player.update()
         ghosts.forEach((g) => g.update())
-        // If the player didn't hit anything, check again
-        if (!resetReq) player.checkCollision()
-
-        TileMap.draw(c)
-
-        //Draw UI Bars
-        c.fillStyle = "#000"
-        c.fillRect(0, 0, 28*TILE_SIZE, 3*TILE_SIZE)
-        c.fillRect(0, 34*TILE_SIZE, 28*TILE_SIZE, 2*TILE_SIZE)
-
-        //Draw monster pen exit
-        c.fillRect(13.5*TILE_SIZE, 15*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-        c.fillStyle = "#e2cba9"
-        c.fillRect(13.5*TILE_SIZE, 15.25*TILE_SIZE, TILE_SIZE, TILE_SIZE/2)
-
-        player.draw(c)
-        ghosts.forEach((g) => g.draw(c))
+        if (!resetReq) {
+            // If the player didn't hit anything, check again
+            player.checkCollision()
+            draw()
+        }
     }
 
     window.requestAnimationFrame(tick)
 }
 tick()
+
+function draw() {
+    c.fillStyle = "rgb(0,0,150)"
+    c.fillRect(0, 0, canvas.width, canvas.height)
+    TileMap.draw(c)
+
+    //Draw UI Bars
+    c.fillStyle = "#000"
+    c.fillRect(0, 0, 28*TILE_SIZE, 3*TILE_SIZE)
+    c.fillRect(0, 34*TILE_SIZE, 28*TILE_SIZE, 2*TILE_SIZE)
+
+    //Draw monster pen exit
+    c.fillRect(13.5*TILE_SIZE, 15*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    c.fillStyle = "#e2cba9"
+    c.fillRect(13.5*TILE_SIZE, 15.25*TILE_SIZE, TILE_SIZE, TILE_SIZE/2)
+
+    player.draw(c)
+    ghosts.forEach((g) => g.draw(c))
+}

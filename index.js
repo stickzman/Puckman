@@ -43,7 +43,7 @@ class Ghost {
         this.debug = false;
         this.active = false;
         this.dotLimit = 0;
-        this.normSpeed = 0.75;
+        this.baseSpeed = 0.75;
         this.frightenedSpeed = 0.5;
         this.tunnelSpeed = 0.4;
         this.x = 13.5 * TILE_SIZE;
@@ -52,6 +52,60 @@ class Ghost {
         this.targetY = 0;
     }
     reset() {
+        // Speed
+        if (level === 1) {
+            this.baseSpeed = 0.75;
+            this.frightenedSpeed = 0.5;
+            this.tunnelSpeed = 0.4;
+        }
+        else if (level <= 4) {
+            this.baseSpeed = 0.85;
+            this.frightenedSpeed = 0.55;
+            this.tunnelSpeed = 0.45;
+        }
+        else if (level <= 20) {
+            this.baseSpeed = 0.95;
+            this.frightenedSpeed = 0.6;
+            this.tunnelSpeed = 0.5;
+        }
+        else {
+            this.baseSpeed = 0.95;
+            this.frightenedSpeed = 0.6;
+            this.tunnelSpeed = 0.5;
+        }
+        // Fright Frames
+        switch (level) {
+            case 1:
+                Ghost.maxFrightenedFrames = 6 * 60;
+                break;
+            case 2:
+            case 6:
+            case 10:
+                Ghost.maxFrightenedFrames = 5 * 60;
+                break;
+            case 3:
+                Ghost.maxFrightenedFrames = 4 * 60;
+                break;
+            case 4:
+            case 14:
+                Ghost.maxFrightenedFrames = 3 * 60;
+                break;
+            case 5:
+            case 7:
+            case 11:
+            case 8:
+                Ghost.maxFrightenedFrames = 2 * 60;
+                break;
+            case 9:
+            case 12:
+            case 13:
+            case 15:
+            case 16:
+            case 18:
+                Ghost.maxFrightenedFrames = 1 * 60;
+                break;
+            default: Ghost.maxFrightenedFrames = 0;
+        }
         this.dotCount = 0;
         this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT;
         this.setState(STATE.WAITING);
@@ -184,7 +238,7 @@ class Ghost {
                     break;
                 }
                 default: {
-                    this.setSpeed(this.normSpeed);
+                    this.setSpeed(this.baseSpeed);
                 }
             }
         }
@@ -323,10 +377,17 @@ class Blinky extends Ghost {
         this.color = "#fc0000";
         this.scatterX = 24;
         this.scatterY = 1;
+        this.elroy = 0;
         this.reset();
     }
+    setElroy(e) {
+        this.elroy = e;
+        if (this.active && this.state !== STATE.CHASE)
+            this.setState(STATE.CHASE);
+    }
     reset() {
-        this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT;
+        super.reset();
+        this.elroy = 0;
         this.x = 13.5 * TILE_SIZE;
         this.y = 14 * TILE_SIZE;
         this.setState(globalState);
@@ -336,6 +397,80 @@ class Blinky extends Ghost {
         if (this.state === STATE.CHASE) {
             this.targetX = player.tileX;
             this.targetY = player.tileY;
+        }
+    }
+    setState(state) {
+        // If we're not transitioning from "FRIGHTENED" state, reverse direction
+        switch (state) {
+            case STATE.FRIGHTENED: {
+                if (!this.active)
+                    return;
+                this.frightenedFrames = Ghost.maxFrightenedFrames;
+                break;
+            }
+            case STATE.CHASE: {
+                if (this.state !== STATE.FRIGHTENED)
+                    this.direction = this.getOppositeDir(this.direction);
+                break;
+            }
+            case STATE.SCATTER: {
+                if (this.elroy)
+                    return;
+                if (this.state !== STATE.FRIGHTENED)
+                    this.direction = this.getOppositeDir(this.direction);
+                this.targetX = this.scatterX;
+                this.targetY = this.scatterY;
+                break;
+            }
+            case STATE.EATEN: {
+                this.targetX = this.homeX;
+                this.targetY = this.homeY;
+                break;
+            }
+            case STATE.WAITING: {
+                this.x = this.waitX * TILE_SIZE;
+                this.y = this.waitY * TILE_SIZE;
+                this.updateTilePos();
+                break;
+            }
+            case STATE.EXITING: {
+                this.x = 13.5 * TILE_SIZE;
+                this.y = 17 * TILE_SIZE;
+                this.updateTilePos();
+                this.setSpeed(0.3);
+                break;
+            }
+        }
+        this.active = state === STATE.CHASE || state === STATE.SCATTER || state === STATE.FRIGHTENED;
+        this.state = state;
+    }
+    updateSpeed() {
+        // Tunnel speed penalty
+        if (this.tileY === 17 && (this.tileX < 6 || this.tileX >= 22)) {
+            this.setSpeed(this.tunnelSpeed);
+        }
+        else {
+            switch (this.state) {
+                case STATE.FRIGHTENED: {
+                    this.setSpeed(this.frightenedSpeed);
+                    break;
+                }
+                case STATE.EATEN: {
+                    this.setSpeed(1.5);
+                    break;
+                }
+                default: {
+                    if (this.elroy === 1) {
+                        this.setSpeed(this.baseSpeed + 0.05);
+                    }
+                    else if (this.elroy === 2) {
+                        this.setSpeed(this.baseSpeed + 0.1);
+                    }
+                    else {
+                        this.setSpeed(this.baseSpeed);
+                    }
+                }
+            }
         }
     }
 }
@@ -349,6 +484,18 @@ class Clyde extends Ghost {
         this.waitX = 15.5;
         this.dotLimit = 60;
         this.reset();
+    }
+    reset() {
+        super.reset();
+        if (level === 1) {
+            this.dotLimit = 60;
+        }
+        else if (level === 2) {
+            this.dotLimit = 50;
+        }
+        else {
+            this.dotLimit = 0;
+        }
     }
     incDotCount() {
         if (this.state === STATE.WAITING
@@ -380,6 +527,10 @@ class Inky extends Ghost {
         this.dotLimit = 30;
         this.reset();
         this.updateOffset();
+    }
+    reset() {
+        super.reset();
+        this.dotLimit = (level === 1) ? 30 : 0;
     }
     incDotCount() {
         if (this.state === STATE.WAITING
@@ -466,6 +617,8 @@ class Player {
         this.direction = dir.LEFT;
         this.desiredDirection = this.direction;
         this.dotCount = 0;
+        this.elroy1Limit = 224;
+        this.elroy2Limit = 234;
         this.dotTimer = 0;
         this.dotTimerLimit = 240;
         this.ghostsEaten = 0;
@@ -475,6 +628,57 @@ class Player {
         this.reset();
     }
     reset() {
+        //Speed
+        if (level === 1) {
+            this.baseSpeed = 0.8;
+            this.boostSpeed = 0.9;
+        }
+        else if (level <= 4) {
+            this.baseSpeed = 0.9;
+            this.boostSpeed = 0.95;
+        }
+        else if (level <= 20) {
+            this.baseSpeed = 1;
+            this.boostSpeed = 1;
+        }
+        else {
+            this.baseSpeed = 0.9;
+            this.boostSpeed = 1;
+        }
+        //Elroy Dots
+        if (level === 1) {
+            this.elroy1Limit = 224;
+            this.elroy2Limit = 234;
+        }
+        else if (level <= 2) {
+            this.elroy1Limit = 214;
+            this.elroy2Limit = 229;
+        }
+        else if (level <= 5) {
+            this.elroy1Limit = 204;
+            this.elroy2Limit = 224;
+        }
+        else if (level <= 8) {
+            this.elroy1Limit = 194;
+            this.elroy2Limit = 219;
+        }
+        else if (level <= 11) {
+            this.elroy1Limit = 184;
+            this.elroy2Limit = 214;
+        }
+        else if (level <= 14) {
+            this.elroy1Limit = 164;
+            this.elroy2Limit = 204;
+        }
+        else if (level <= 18) {
+            this.elroy1Limit = 144;
+            this.elroy2Limit = 194;
+        }
+        else {
+            this.elroy1Limit = 124;
+            this.elroy2Limit = 184;
+        }
+        this.dotCount = 0;
         this.frameHalt = 0;
         this.dotTimer = 0;
         this.x = 13.5 * TILE_SIZE;
@@ -504,9 +708,16 @@ class Player {
                 this.dotTimer = 0;
                 ghosts.forEach((g) => g.incDotCount());
                 // Check win
-                if (++this.dotCount >= this.dotLimit) {
-                    console.log("You Win!!");
-                    globalFrameHalt = Infinity;
+                ++this.dotCount;
+                if (this.dotCount === this.elroy1Limit) {
+                    blinky.setElroy(1);
+                }
+                else if (this.dotCount === this.elroy2Limit) {
+                    blinky.setElroy(2);
+                }
+                else if (this.dotCount >= this.dotLimit) {
+                    globalFrameHalt = 120;
+                    setLevel(level + 1);
                 }
                 if (tile === 2) {
                     // Small dot
@@ -756,6 +967,8 @@ try {
 catch (e) {
     console.error(e);
 }
+let statePatterns = { CHASE: [420, 2040, 3540, 5040], SCATTER: [1620, 3240, 4740] };
+let level = 1;
 let globalState = STATE.SCATTER;
 let score = 0;
 let frameCount = 0;
@@ -794,6 +1007,20 @@ window.addEventListener("beforeunload", () => {
         console.error(e);
     }
 });
+function setLevel(l) {
+    level = l;
+    if (level === 1) {
+        statePatterns = { CHASE: [420, 2040, 3540, 5040], SCATTER: [1620, 3240, 4740] };
+    }
+    else if (level <= 4) {
+        statePatterns = { CHASE: [420, 2040, 3540, 65521], SCATTER: [1620, 3240, 65520] };
+    }
+    else {
+        statePatterns = { CHASE: [300, 1800, 3300, 65521], SCATTER: [1500, 3000, 65520] };
+    }
+    TileMap.reset();
+    resetReq = true;
+}
 function setGlobalState(state) {
     globalState = state;
     ghosts.forEach((g) => {
@@ -824,44 +1051,41 @@ function tick() {
     if (globalFrameHalt > 0) {
         globalFrameHalt--;
     }
+    else if (resetReq) {
+        resetAll();
+        globalFrameHalt = 120;
+        draw();
+    }
     else if (!paused) {
-        if (resetReq) {
-            resetAll();
-            globalFrameHalt = 120;
-        }
-        switch (frameCount++) {
-            case 420:
-            case 2040:
-            case 3540:
-            case 5040:
-                setGlobalState(STATE.CHASE);
-                break;
-            case 1620:
-            case 3240:
-            case 4740:
-                setGlobalState(STATE.SCATTER);
-                break;
-        }
-        c.fillStyle = "rgb(0,0,150)";
-        c.fillRect(0, 0, canvas.width, canvas.height);
+        frameCount++;
+        if (statePatterns.CHASE.includes(frameCount))
+            setGlobalState(STATE.CHASE);
+        else if (statePatterns.SCATTER.includes(frameCount))
+            setGlobalState(STATE.SCATTER);
         player.update();
         ghosts.forEach((g) => g.update());
-        // If the player didn't hit anything, check again
-        if (!resetReq)
+        if (!resetReq) {
+            // If the player didn't hit anything, check again
             player.checkCollision();
-        TileMap.draw(c);
-        //Draw UI Bars
-        c.fillStyle = "#000";
-        c.fillRect(0, 0, 28 * TILE_SIZE, 3 * TILE_SIZE);
-        c.fillRect(0, 34 * TILE_SIZE, 28 * TILE_SIZE, 2 * TILE_SIZE);
-        //Draw monster pen exit
-        c.fillRect(13.5 * TILE_SIZE, 15 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        c.fillStyle = "#e2cba9";
-        c.fillRect(13.5 * TILE_SIZE, 15.25 * TILE_SIZE, TILE_SIZE, TILE_SIZE / 2);
-        player.draw(c);
-        ghosts.forEach((g) => g.draw(c));
+            draw();
+        }
     }
     window.requestAnimationFrame(tick);
 }
 tick();
+function draw() {
+    c.fillStyle = "rgb(0,0,150)";
+    c.fillRect(0, 0, canvas.width, canvas.height);
+    TileMap.draw(c);
+    //Draw UI Bars
+    c.fillStyle = "#000";
+    c.fillRect(0, 0, 28 * TILE_SIZE, 3 * TILE_SIZE);
+    c.fillRect(0, 34 * TILE_SIZE, 28 * TILE_SIZE, 2 * TILE_SIZE);
+    //Draw monster pen exit
+    c.fillRect(13.5 * TILE_SIZE, 15 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    c.fillStyle = "#e2cba9";
+    c.fillRect(13.5 * TILE_SIZE, 15.25 * TILE_SIZE, TILE_SIZE, TILE_SIZE / 2);
+    player.draw(c);
+    ghosts.forEach((g) => g.draw(c));
+}
 //# sourceMappingURL=index.js.map

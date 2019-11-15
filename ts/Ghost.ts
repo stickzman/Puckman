@@ -19,7 +19,7 @@ class Ghost {
     debug = false
     active = false
     dotLimit = 0
-    normSpeed = 0.75
+    baseSpeed = 0.75
     frightenedSpeed = 0.5
     tunnelSpeed = 0.4
     x = 13.5 * TILE_SIZE
@@ -33,6 +33,45 @@ class Ghost {
     constructor() { }
 
     reset() {
+        // Speed
+        if (level === 1) {
+            this.baseSpeed = 0.75
+            this.frightenedSpeed = 0.5
+            this.tunnelSpeed = 0.4
+        } else if (level <= 4) {
+            this.baseSpeed = 0.85
+            this.frightenedSpeed = 0.55
+            this.tunnelSpeed = 0.45
+        } else if (level <= 20) {
+            this.baseSpeed = 0.95
+            this.frightenedSpeed = 0.6
+            this.tunnelSpeed = 0.5
+        } else {
+            this.baseSpeed = 0.95
+            this.frightenedSpeed = 0.6
+            this.tunnelSpeed = 0.5
+        }
+        // Fright Frames
+        switch (level) {
+            case 1: Ghost.maxFrightenedFrames = 6*60; break;
+            case 2:
+            case 6:
+            case 10: Ghost.maxFrightenedFrames = 5*60; break;
+            case 3: Ghost.maxFrightenedFrames = 4*60; break;
+            case 4:
+            case 14:Ghost.maxFrightenedFrames = 3*60; break;
+            case 5:
+            case 7:
+            case 11:
+            case 8: Ghost.maxFrightenedFrames = 2*60; break;
+            case 9:
+            case 12:
+            case 13:
+            case 15:
+            case 16:
+            case 18: Ghost.maxFrightenedFrames = 1*60; break;
+            default: Ghost.maxFrightenedFrames = 0;
+        }
         this.dotCount = 0
         this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
         this.setState(STATE.WAITING)
@@ -162,7 +201,7 @@ class Ghost {
                     break
                 }
                 default: {
-                    this.setSpeed(this.normSpeed)
+                    this.setSpeed(this.baseSpeed)
                 }
             }
         }

@@ -11,6 +11,8 @@ class Player {
     direction = dir.LEFT
     desiredDirection = this.direction
     dotCount = 0
+    elroy1Limit = 224
+    elroy2Limit = 234
     dotTimer = 0
     dotTimerLimit = 240
     ghostsEaten = 0
@@ -27,6 +29,47 @@ class Player {
     }
 
     reset() {
+        //Speed
+        if (level === 1) {
+            this.baseSpeed = 0.8
+            this.boostSpeed = 0.9
+        } else if (level <= 4) {
+            this.baseSpeed = 0.9
+            this.boostSpeed = 0.95
+        } else if (level <= 20) {
+            this.baseSpeed = 1
+            this.boostSpeed = 1
+        } else {
+            this.baseSpeed = 0.9
+            this.boostSpeed = 1
+        }
+        //Elroy Dots
+        if (level === 1) {
+            this.elroy1Limit = 224
+            this.elroy2Limit = 234
+        } else if (level <= 2) {
+            this.elroy1Limit = 214
+            this.elroy2Limit = 229
+        } else if (level <= 5) {
+            this.elroy1Limit = 204
+            this.elroy2Limit = 224
+        } else if (level <= 8) {
+            this.elroy1Limit = 194
+            this.elroy2Limit = 219
+        } else if (level <= 11) {
+            this.elroy1Limit = 184
+            this.elroy2Limit = 214
+        } else if (level <= 14) {
+            this.elroy1Limit = 164
+            this.elroy2Limit = 204
+        } else if (level <= 18) {
+            this.elroy1Limit = 144
+            this.elroy2Limit = 194
+        } else {
+            this.elroy1Limit = 124
+            this.elroy2Limit = 184
+        }
+        this.dotCount = 0
         this.frameHalt = 0
         this.dotTimer = 0
         this.x = 13.5 * TILE_SIZE
@@ -57,9 +100,14 @@ class Player {
                 this.dotTimer = 0
                 ghosts.forEach((g) => g.incDotCount())
                 // Check win
-                if (++this.dotCount >= this.dotLimit) {
-                    console.log("You Win!!")
-                    globalFrameHalt = Infinity
+                ++this.dotCount
+                if (this.dotCount === this.elroy1Limit) {
+                    blinky.setElroy(1)
+                } else if (this.dotCount === this.elroy2Limit) {
+                    blinky.setElroy(2)
+                } else if (this.dotCount >= this.dotLimit) {
+                    globalFrameHalt = 120
+                    setLevel(level+1)
                 }
                 if (tile === 2) {
                     // Small dot

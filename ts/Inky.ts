@@ -15,6 +15,11 @@ class Inky extends Ghost {
         this.updateOffset()
     }
 
+    reset() {
+        super.reset()
+        this.dotLimit = (level === 1) ? 30 : 0
+    }
+
     incDotCount() {
         if (this.state === STATE.WAITING
             && pinky.state !== STATE.WAITING)

@@ -11,6 +11,17 @@ class Clyde extends Ghost {
         this.reset()
     }
 
+    reset() {
+        super.reset()
+        if (level === 1) {
+            this.dotLimit = 60
+        } else if (level === 2) {
+            this.dotLimit = 50
+        } else {
+            this.dotLimit = 0
+        }
+    }
+
     incDotCount() {
         if (this.state === STATE.WAITING
             && pinky.state !== STATE.WAITING
