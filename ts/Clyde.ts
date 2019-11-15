@@ -1,6 +1,6 @@
 /// <reference path="Ghost.ts"/>
 class Clyde extends Ghost {
-    protected color = "orange"
+    protected color = "#fab852"
     protected scatterX = 0
     protected scatterY = 35
     protected waitX = 15.5

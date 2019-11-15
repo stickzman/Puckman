@@ -1,6 +1,6 @@
 /// <reference path="Ghost.ts"/>
 class Inky extends Ghost {
-    protected color = "lightblue"
+    protected color = "#00ffff"
     protected scatterX = 27
     protected scatterY = 35
     protected waitX = 11.5

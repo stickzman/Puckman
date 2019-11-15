@@ -320,7 +320,7 @@ Ghost.maxFrightenedFrames = 720;
 class Blinky extends Ghost {
     constructor() {
         super();
-        this.color = "red";
+        this.color = "#fc0000";
         this.scatterX = 24;
         this.scatterY = 1;
         this.reset();
@@ -343,7 +343,7 @@ class Blinky extends Ghost {
 class Clyde extends Ghost {
     constructor() {
         super();
-        this.color = "orange";
+        this.color = "#fab852";
         this.scatterX = 0;
         this.scatterY = 35;
         this.waitX = 15.5;
@@ -373,7 +373,7 @@ class Clyde extends Ghost {
 class Inky extends Ghost {
     constructor() {
         super();
-        this.color = "lightblue";
+        this.color = "#00ffff";
         this.scatterX = 27;
         this.scatterY = 35;
         this.waitX = 11.5;
@@ -422,7 +422,7 @@ class Inky extends Ghost {
 class Pinky extends Ghost {
     constructor() {
         super();
-        this.color = "pink";
+        this.color = "#feb8fe";
         this.scatterX = 4;
         this.scatterY = 1;
         this.reset();
@@ -457,7 +457,7 @@ class Pinky extends Ghost {
 /// <reference path="helper.ts"/>
 class Player {
     constructor() {
-        this.color = "yellow";
+        this.color = "#ffff00";
         this.frameHalt = 0;
         this.dotLimit = 244;
         this.debug = false;
@@ -476,7 +476,6 @@ class Player {
     }
     reset() {
         this.frameHalt = 0;
-        this.dotCount = 0;
         this.dotTimer = 0;
         this.x = 13.5 * TILE_SIZE;
         this.y = 26 * TILE_SIZE;
@@ -635,7 +634,7 @@ class Player {
         //Draw character
         c.fillStyle = this.color;
         c.beginPath();
-        c.arc(this.x + (TILE_SIZE / 2), this.y + (TILE_SIZE / 2), TILE_SIZE / 2, 0, Math.PI * 2);
+        c.arc(this.x + (TILE_SIZE / 2), this.y + (TILE_SIZE / 2), TILE_SIZE * 0.6, 0, Math.PI * 2);
         c.fill();
         //Draw lives
         for (let i = 0; i < this.lives; i++) {
@@ -744,6 +743,19 @@ const canvas = document.getElementById("canvas");
 canvas.height = 36 * TILE_SIZE;
 canvas.width = 28 * TILE_SIZE;
 const c = canvas.getContext("2d");
+//Adjust UI to TILE_SIZE
+const body = document.querySelector("body");
+body.style.fontSize = TILE_SIZE + "px";
+const readyLabel = document.querySelector(".ready");
+const scoreElem = document.querySelector(".score");
+const highscoreElem = document.querySelector(".highscore");
+let highscore = parseInt(highscoreElem.textContent);
+try {
+    highscoreElem.textContent = localStorage.getItem("highscore") || "0";
+}
+catch (e) {
+    console.error(e);
+}
 let globalState = STATE.SCATTER;
 let score = 0;
 let frameCount = 0;
@@ -770,6 +782,18 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "d" || e.key === "ArrowRight")
         player.desiredDirection = dir.RIGHT;
 });
+window.addEventListener("resize", () => {
+    //Adjust UI font-size
+    body.style.fontSize = (canvas.offsetHeight / 36) + "px";
+});
+window.addEventListener("beforeunload", () => {
+    try {
+        localStorage.setItem("highscore", highscore.toString());
+    }
+    catch (e) {
+        console.error(e);
+    }
+});
 function setGlobalState(state) {
     globalState = state;
     ghosts.forEach((g) => {
@@ -781,8 +805,15 @@ function addPoints(points) {
     if (Math.floor(score / 10000) !== Math.floor((score + points) / 10000))
         player.lives++;
     score += points;
+    scoreElem.textContent = score.toString();
+    if (score > highscore) {
+        highscore = score;
+        highscoreElem.textContent = score.toString();
+    }
 }
 function resetAll() {
+    readyLabel.style.display = "block";
+    setTimeout(() => { readyLabel.style.display = "none"; }, 2000);
     setGlobalState(STATE.SCATTER);
     player.reset();
     ghosts.forEach((g) => g.reset());
@@ -796,7 +827,7 @@ function tick() {
     else if (!paused) {
         if (resetReq) {
             resetAll();
-            globalFrameHalt = 90;
+            globalFrameHalt = 120;
         }
         switch (frameCount++) {
             case 420:

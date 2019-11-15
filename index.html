@@ -10,17 +10,64 @@
                 overflow: hidden;
                 margin: 0px;
                 text-align: center;
+                text-transform: capitalize;
+                font-size: 2.77vh;  /* TILE_SIZE percentage */
+                font-family: "Press Start 2P", monospace;
+            }
+            .container {
+                display: inline-block;
+                position: relative;
+                width: 77vh;
+                max-width: 100vw;
+                height: 100vh;
+                max-height: 128vw;
             }
             canvas {
                 width: 77vh;
                 max-width: 100vw;
                 height: 100vh;
-                max-height: 128vw
+                max-height: 128vw;
+            }
+            .ui {
+                position: absolute;
+                color: #FFF;
+            }
+            .scoreLabel {
+                top: 1.5%;
+                left: 10%;
+                width: 25%;
+            }
+            .score {
+                top: 5%;
+                left: 10%;
+                width: 25%;
+            }
+            .highscoreLabel {
+                top: 1.5%;
+                right: 10%;
+                width: 40%;
+            }
+            .highscore {
+                top: 5%;
+                right: 10%;
+                width: 40%;
+            }
+            .ready {
+                color: #ffff00;
+                top: 56%;
+                left: 40%;
             }
         </style>
     </head>
     <body>
-        <canvas id="canvas" width="224" height="288"></canvas>
+        <div class="container">
+            <div class="ui scoreLabel">1UP</div>
+            <div class="ui score">0</div>
+            <div class="ui highscoreLabel">HIGH SCORE</div>
+            <div class="ui highscore">0</div>
+            <div class="ui ready">READY!</div>
+            <canvas id="canvas" width="224" height="288"></canvas>
+        </div>
         <script type="text/javascript" src="index.js"></script>
     </body>
 </html>

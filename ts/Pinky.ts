@@ -1,6 +1,6 @@
 /// <reference path="Ghost.ts"/>
 class Pinky extends Ghost {
-    protected color = "pink"
+    protected color = "#feb8fe"
     protected scatterX = 4
     protected scatterY = 1
 

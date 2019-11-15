@@ -1,6 +1,6 @@
 /// <reference path="Ghost.ts"/>
 class Blinky extends Ghost {
-    protected color = "red"
+    protected color = "#fc0000"
     protected scatterX = 24
     protected scatterY = 1
 

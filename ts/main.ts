@@ -10,6 +10,18 @@ const canvas = <HTMLCanvasElement>document.getElementById("canvas")
 canvas.height = 36 * TILE_SIZE
 canvas.width = 28 * TILE_SIZE
 const c = canvas.getContext("2d")
+//Adjust UI to TILE_SIZE
+const body = document.querySelector("body")
+body.style.fontSize = TILE_SIZE + "px"
+const readyLabel = <HTMLElement>document.querySelector(".ready")
+const scoreElem = document.querySelector(".score")
+const highscoreElem = document.querySelector(".highscore")
+let highscore = parseInt(highscoreElem.textContent)
+try {
+    highscoreElem.textContent = localStorage.getItem("highscore") || "0"
+} catch (e) {
+    console.error(e)
+}
 
 let globalState = STATE.SCATTER
 let score = 0
@@ -34,6 +46,19 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "d" || e.key === "ArrowRight") player.desiredDirection = dir.RIGHT
 })
 
+window.addEventListener("resize", () => {
+    //Adjust UI font-size
+    body.style.fontSize = (canvas.offsetHeight/36) + "px"
+})
+
+window.addEventListener("beforeunload", () => {
+    try {
+        localStorage.setItem("highscore", highscore.toString())
+    } catch (e) {
+        console.error(e)
+    }
+})
+
 function setGlobalState(state: STATE) {
     globalState = state
     ghosts.forEach((g) => {
@@ -44,9 +69,16 @@ function setGlobalState(state: STATE) {
 function addPoints(points: number) {
     if (Math.floor(score/10000) !== Math.floor((score+points)/10000)) player.lives++
     score += points
+    scoreElem.textContent = score.toString()
+    if (score > highscore) {
+        highscore = score
+        highscoreElem.textContent = score.toString()
+    }
 }
 
 function resetAll() {
+    readyLabel.style.display = "block"
+    setTimeout(() => { readyLabel.style.display = "none" }, 2000)
     setGlobalState(STATE.SCATTER)
     player.reset()
     ghosts.forEach((g) => g.reset())
@@ -60,7 +92,7 @@ function tick() {
     } else if (!paused) {
         if (resetReq) {
             resetAll()
-            globalFrameHalt = 90
+            globalFrameHalt = 120
         }
         switch (frameCount++) {
             case 420:

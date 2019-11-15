@@ -1,6 +1,6 @@
 /// <reference path="helper.ts"/>
 class Player {
-    private color = "yellow"
+    private color = "#ffff00"
     private frameHalt = 0
     private pixPerFrame: number
     private dotLimit = 244
@@ -28,11 +28,10 @@ class Player {
 
     reset() {
         this.frameHalt = 0
-        this.dotCount = 0
         this.dotTimer = 0
         this.x = 13.5 * TILE_SIZE
         this.y = 26 * TILE_SIZE
-        this.direction = dir.LEFT        
+        this.direction = dir.LEFT
         this.setSpeed(this.baseSpeed)
         this.updateTilePos()
     }
@@ -181,7 +180,7 @@ class Player {
         //Draw character
         c.fillStyle = this.color
         c.beginPath()
-        c.arc(this.x + (TILE_SIZE/2), this.y + (TILE_SIZE/2), TILE_SIZE/2, 0, Math.PI*2)
+        c.arc(this.x + (TILE_SIZE/2), this.y + (TILE_SIZE/2), TILE_SIZE*0.6, 0, Math.PI*2)
         c.fill()
 
         //Draw lives
