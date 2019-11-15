@@ -18,12 +18,12 @@ const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
 const readyLabel = <HTMLElement>document.querySelector(".ready")
 const scoreElem = document.querySelector(".score")
 const highscoreElem = document.querySelector(".highscore")
-let highscore = parseInt(highscoreElem.textContent)
 try {
     highscoreElem.textContent = localStorage.getItem("highscore") || "0"
 } catch (e) {
     console.error(e)
 }
+let highscore = parseInt(highscoreElem.textContent)
 
 let statePatterns = {CHASE: [420, 2040, 3540, 5040], SCATTER: [1620, 3240, 4740]}
 let level = 1
