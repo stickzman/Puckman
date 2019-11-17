@@ -123,6 +123,12 @@ class Ghost {
             if (this.tileY === 14
                 && (this.y + this.pixPerFrame / 2) % TILE_SIZE < this.pixPerFrame) {
                 this.setState(globalState);
+                // Check if player has boostFrames left,
+                // set ghost frightenedFrames to boostFrames
+                if (player.boostFrames > 0) {
+                    this.setState(STATE.FRIGHTENED);
+                    this.frightenedFrames = player.boostFrames;
+                }
             }
             else {
                 this.y -= this.pixPerFrame;
