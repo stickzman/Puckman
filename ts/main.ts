@@ -236,6 +236,9 @@ function resetAll() {
 
 function tick() {
     if (!running) return
+    // Check Gamepad controls
+    if (gamepadIndex > -1) updateGamepadControls(navigator.getGamepads()[gamepadIndex])
+
     if (globalFrameHalt > 0) {
         globalFrameHalt--
     } else if (resetReq) {
@@ -246,9 +249,6 @@ function tick() {
         frameCount++
         if (statePatterns.CHASE.includes(frameCount)) setGlobalState(STATE.CHASE)
         else if (statePatterns.SCATTER.includes(frameCount)) setGlobalState(STATE.SCATTER)
-
-        // Check Gamepad controls
-        if (gamepadIndex > -1) updateGamepadControls(navigator.getGamepads()[gamepadIndex])
 
         player.update()
         ghosts.forEach((g) => g.update())
