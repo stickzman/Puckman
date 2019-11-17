@@ -179,15 +179,17 @@ class Player {
                     g.setState(STATE.EATEN)
                 } else if (g.active && !this.god) {
                     if (--this.lives <= 0) {
+                        running = false
                         setTimeout(() => {
                             gameOverText.textContent = "GAME OVER"
                             gameOverScreen.style.display = "block"
                             gameOverText.style.display = "block"
-                            running = false
+                            pollGamepadStart()
                         }, 1666)
+                    } else {
+                        globalFrameHalt = 100
+                        resetReq = true
                     }
-                    globalFrameHalt = 100
-                    resetReq = true
                 }
             }
         })

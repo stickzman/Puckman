@@ -8,8 +8,20 @@
 /// <reference path="Clyde.ts"/>
 const gameOverScreen = <HTMLElement>document.querySelector(".gameOverScreen")
 const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
+function pollGamepadStart() {
+    if (running) return
+    if (gamepadIndex > -1) {
+        const gamepad = navigator.getGamepads()[gamepadIndex]
+        if (gamepad.buttons.some(b => b.pressed)) {
+            resetGame()
+            return
+        }
+    }
+    requestAnimationFrame(pollGamepadStart)
+}
 let startGameIntCount = 0
 const startGameInt = setInterval(() => {
+    pollGamepadStart()
     switch (++startGameIntCount) {
         case 0: {
             gameOverText.textContent = "PUSH START!";
@@ -87,6 +99,11 @@ window.addEventListener("beforeunload", () => {
     }
 })
 
+let gamepadIndex = -1
+window.addEventListener("gamepadconnected", (e: GamepadEvent) => {
+    gamepadIndex = e.gamepad.index
+})
+
 let touchX: number
 let touchY: number
 window.addEventListener("touchstart", (e) => {
@@ -115,6 +132,40 @@ window.addEventListener("touchmove", (e) => {
         }
     }
 })
+
+function updateGamepadControls(gamepad: Gamepad) {
+    const buttons = gamepad.buttons
+    if (buttons[12].pressed) player.desiredDirection = dir.UP
+    else if (buttons[13].pressed) player.desiredDirection = dir.DOWN
+    else if (buttons[14].pressed) player.desiredDirection = dir.LEFT
+    else if (buttons[15].pressed) player.desiredDirection = dir.RIGHT
+    // Get active analogue stick
+    const deadzone = 0.8
+    let xAxis: number, yAxis: number
+    if (Math.hypot(gamepad.axes[0], gamepad.axes[1]) >= deadzone) {
+        xAxis = gamepad.axes[0]
+        yAxis = gamepad.axes[1]
+    } else if (Math.hypot(gamepad.axes[2], gamepad.axes[3]) >= deadzone) {
+        xAxis = gamepad.axes[2]
+        yAxis = gamepad.axes[3]
+    } else {
+        return
+    }
+    if (Math.abs(xAxis) > Math.abs(yAxis)) {
+        if (xAxis < 0) {
+            player.desiredDirection = dir.LEFT
+        } else {
+            player.desiredDirection = dir.RIGHT
+        }
+    } else {
+        if (yAxis < 0) {
+            player.desiredDirection = dir.UP
+        } else {
+            player.desiredDirection = dir.DOWN
+        }
+
+    }
+}
 
 function levelWin() {
     globalFrameHalt = 180
@@ -195,6 +246,9 @@ function tick() {
         frameCount++
         if (statePatterns.CHASE.includes(frameCount)) setGlobalState(STATE.CHASE)
         else if (statePatterns.SCATTER.includes(frameCount)) setGlobalState(STATE.SCATTER)
+
+        // Check Gamepad controls
+        if (gamepadIndex > -1) updateGamepadControls(navigator.getGamepads()[gamepadIndex])
 
         player.update()
         ghosts.forEach((g) => g.update())

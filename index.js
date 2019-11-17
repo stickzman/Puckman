@@ -800,15 +800,18 @@ class Player {
                 }
                 else if (g.active && !this.god) {
                     if (--this.lives <= 0) {
+                        running = false;
                         setTimeout(() => {
                             gameOverText.textContent = "GAME OVER";
                             gameOverScreen.style.display = "block";
                             gameOverText.style.display = "block";
-                            running = false;
+                            pollGamepadStart();
                         }, 1666);
                     }
-                    globalFrameHalt = 100;
-                    resetReq = true;
+                    else {
+                        globalFrameHalt = 100;
+                        resetReq = true;
+                    }
                 }
             }
         });
@@ -971,8 +974,21 @@ TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
 /// <reference path="Clyde.ts"/>
 const gameOverScreen = document.querySelector(".gameOverScreen");
 const gameOverText = document.querySelector(".gameOverText");
+function pollGamepadStart() {
+    if (running)
+        return;
+    if (gamepadIndex > -1) {
+        const gamepad = navigator.getGamepads()[gamepadIndex];
+        if (gamepad.buttons.some(b => b.pressed)) {
+            resetGame();
+            return;
+        }
+    }
+    requestAnimationFrame(pollGamepadStart);
+}
 let startGameIntCount = 0;
 const startGameInt = setInterval(() => {
+    pollGamepadStart();
     switch (++startGameIntCount) {
         case 0: {
             gameOverText.textContent = "PUSH START!";
@@ -1056,6 +1072,10 @@ window.addEventListener("beforeunload", () => {
         console.error(e);
     }
 });
+let gamepadIndex = -1;
+window.addEventListener("gamepadconnected", (e) => {
+    gamepadIndex = e.gamepad.index;
+});
 let touchX;
 let touchY;
 window.addEventListener("touchstart", (e) => {
@@ -1088,6 +1108,47 @@ window.addEventListener("touchmove", (e) => {
         }
     }
 });
+function updateGamepadControls(gamepad) {
+    const buttons = gamepad.buttons;
+    if (buttons[12].pressed)
+        player.desiredDirection = dir.UP;
+    else if (buttons[13].pressed)
+        player.desiredDirection = dir.DOWN;
+    else if (buttons[14].pressed)
+        player.desiredDirection = dir.LEFT;
+    else if (buttons[15].pressed)
+        player.desiredDirection = dir.RIGHT;
+    // Get active analogue stick
+    const deadzone = 0.8;
+    let xAxis, yAxis;
+    if (Math.hypot(gamepad.axes[0], gamepad.axes[1]) >= deadzone) {
+        xAxis = gamepad.axes[0];
+        yAxis = gamepad.axes[1];
+    }
+    else if (Math.hypot(gamepad.axes[2], gamepad.axes[3]) >= deadzone) {
+        xAxis = gamepad.axes[2];
+        yAxis = gamepad.axes[3];
+    }
+    else {
+        return;
+    }
+    if (Math.abs(xAxis) > Math.abs(yAxis)) {
+        if (xAxis < 0) {
+            player.desiredDirection = dir.LEFT;
+        }
+        else {
+            player.desiredDirection = dir.RIGHT;
+        }
+    }
+    else {
+        if (yAxis < 0) {
+            player.desiredDirection = dir.UP;
+        }
+        else {
+            player.desiredDirection = dir.DOWN;
+        }
+    }
+}
 function levelWin() {
     globalFrameHalt = 180;
     setTimeout(() => {
@@ -1171,6 +1232,9 @@ function tick() {
             setGlobalState(STATE.CHASE);
         else if (statePatterns.SCATTER.includes(frameCount))
             setGlobalState(STATE.SCATTER);
+        // Check Gamepad controls
+        if (gamepadIndex > -1)
+            updateGamepadControls(navigator.getGamepads()[gamepadIndex]);
         player.update();
         ghosts.forEach((g) => g.update());
         if (!resetReq) {
