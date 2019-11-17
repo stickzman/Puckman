@@ -18,6 +18,7 @@ class Ghost {
 
     static maxFrightenedFrames = 720
     debug = false
+    newLife = true
     active = false
     dotLimit = 0
     baseSpeed = 0.75
@@ -53,27 +54,18 @@ class Ghost {
             this.tunnelSpeed = 0.5
         }
         // Fright Frames
-        switch (level) {
-            case 1: Ghost.maxFrightenedFrames = 6*60; break;
-            case 2:
-            case 6:
-            case 10: Ghost.maxFrightenedFrames = 5*60; break;
-            case 3: Ghost.maxFrightenedFrames = 4*60; break;
-            case 4:
-            case 14:Ghost.maxFrightenedFrames = 3*60; break;
-            case 5:
-            case 7:
-            case 11:
-            case 8: Ghost.maxFrightenedFrames = 2*60; break;
-            case 9:
-            case 12:
-            case 13:
-            case 15:
-            case 16:
-            case 18: Ghost.maxFrightenedFrames = 1*60; break;
-            default: Ghost.maxFrightenedFrames = 0;
-        }
+        if (level === 1) Ghost.maxFrightenedFrames = 8*60
+        else if (level === 2) Ghost.maxFrightenedFrames = 7*60
+        else if (level === 3) Ghost.maxFrightenedFrames = 6*60
+        else if (level < 6) Ghost.maxFrightenedFrames = 5*60
+        else if (level < 8) Ghost.maxFrightenedFrames = 4*60
+        else if (level < 10) Ghost.maxFrightenedFrames = 3*60
+        else if (level < 15) Ghost.maxFrightenedFrames = 2*60
+        else if (level < 20) Ghost.maxFrightenedFrames = 1*60
+        else Ghost.maxFrightenedFrames = 0
+
         this.dotCount = 0
+        this.newLife = true
         this.direction = (Math.random() < 0.5) ? dir.LEFT : dir.RIGHT
         this.setState(STATE.WAITING)
     }
@@ -88,12 +80,14 @@ class Ghost {
             if (this.tileY === 14
                     && (this.y + this.pixPerFrame/2) % TILE_SIZE < this.pixPerFrame) {
                 this.setState(globalState)
-                // Check if player has boostFrames left,
+                // Check if the ghost is leaving for first time and
+                // player has boostFrames left, if so
                 // set ghost frightenedFrames to boostFrames
-                if (player.boostFrames > 0) {
+                if (this.newLife && player.boostFrames > 0) {
                     this.setState(STATE.FRIGHTENED)
                     this.frightenedFrames = player.boostFrames
                 }
+                this.newLife = false
             } else {
                 this.y -= this.pixPerFrame
                 this.updateTilePos()

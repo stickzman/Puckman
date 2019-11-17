@@ -71,6 +71,7 @@ class Player {
         }
         this.frameHalt = 0
         this.dotTimer = 0
+        this.boostFrames = 0
         this.x = 13.5 * TILE_SIZE
         this.y = 26 * TILE_SIZE
         this.direction = dir.LEFT

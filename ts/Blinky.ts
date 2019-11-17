@@ -4,6 +4,7 @@ class Blinky extends Ghost {
     protected scatterX = 24
     protected scatterY = 1
     private elroy = 0
+    newLife = false
 
     constructor() {
         super()
@@ -17,6 +18,7 @@ class Blinky extends Ghost {
 
     reset() {
         super.reset()
+        this.newLife = false
         this.elroy = 0
         this.x = 13.5 * TILE_SIZE
         this.y = 14 * TILE_SIZE
