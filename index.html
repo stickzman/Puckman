@@ -11,7 +11,7 @@
                 overflow: hidden;
                 margin: 0px;
                 text-align: center;
-                text-transform: capitalize;
+                text-transform: uppercase;
                 user-select: none;
                 font-family: "Press Start 2P", monospace;
             }
@@ -34,25 +34,35 @@
                 color: #fff;
             }
             .scoreLabel {
-                top: 1.5%;
-                left: 10%;
-                width: 25%;
+							top: 1.5%;
+							left: 0px;
+							width: 31%;
             }
             .score {
                 top: 5%;
-                left: 10%;
-                width: 25%;
+						    left: 0px;
+						    width: 31%;
             }
             .highscoreLabel {
                 top: 1.5%;
-                right: 10%;
-                width: 40%;
+								left: 31%;
+						    width: 40%;
             }
             .highscore {
                 top: 5%;
-                right: 10%;
-                width: 40%;
+								left: 31%;
+						    width: 40%;
             }
+						.levelLabel {
+								top: 1.5%;
+								right: 0px;
+								width: 25%;
+						}
+						.level {
+								top: 5%;
+								right: 0px;
+								width: 25%;
+						}
             .ready {
                 display: none;
                 position: absolute;
@@ -77,10 +87,12 @@
             <div class="gameOverScreen">
                 <div class="scoring gameOverText">PUSH START!</div>
             </div>
-            <div class="scoring scoreLabel">1UP</div>
-            <div class="scoring score">0</div>
+						<div class="scoring scoreLabel">1UP</div>
+						<div class="scoring score">0</div>
             <div class="scoring highscoreLabel">HIGH SCORE</div>
             <div class="scoring highscore">0</div>
+						<div class="scoring levelLabel">LEVEL</div>
+						<div class="scoring level">1</div>
             <div class="ready">READY!</div>
             <canvas id="canvas" width="224" height="288"></canvas>
         </div>

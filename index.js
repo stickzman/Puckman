@@ -695,7 +695,7 @@ class Player {
         this.updateTilePos();
     }
     setSpeed(speed) {
-        speed = Math.min(Math.max(0, speed), 1); // Clamp speed to a percentage
+        speed = Math.max(0, speed); // Clamp speed to a percentage
         this.pixPerFrame = speed * MAX_SPEED;
     }
     update() {
@@ -802,9 +802,9 @@ class Player {
                     if (--this.lives <= 0) {
                         running = false;
                         setTimeout(() => {
-                            gameOverText.textContent = "GAME OVER";
-                            gameOverScreen.style.display = "block";
-                            gameOverText.style.display = "block";
+                            overlayText.textContent = "GAME OVER";
+                            overlayScreen.style.display = "block";
+                            overlayText.style.display = "block";
                             pollGamepadStart();
                         }, 1666);
                     }
@@ -879,7 +879,8 @@ class Player {
 }
 /// <reference path="helper.ts"/>
 class TileMap {
-    constructor() { }
+    constructor() {
+    }
     static reset() {
         TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
         player.dotCount = 0;
@@ -980,7 +981,10 @@ const c = canvas.getContext("2d");
 const body = document.querySelector("body");
 body.style.fontSize = TILE_SIZE + "px";
 const readyLabel = document.querySelector(".ready");
+const levelElem = document.querySelector(".level");
+const scoreLabel = document.querySelector(".scoreLabel");
 const scoreElem = document.querySelector(".score");
+const highscoreLabel = document.querySelector(".highscoreLabel");
 const highscoreElem = document.querySelector(".highscore");
 try {
     highscoreElem.textContent = localStorage.getItem("highscore") || "0";
@@ -1020,26 +1024,26 @@ function pollGamepadStart() {
     requestAnimationFrame(pollGamepadStart);
 }
 pollGamepadStart();
-const gameOverScreen = document.querySelector(".gameOverScreen");
-const gameOverText = document.querySelector(".gameOverText");
+const overlayScreen = document.querySelector(".gameOverScreen");
+const overlayText = document.querySelector(".gameOverText");
 let startGameIntCount = 0;
 const startGameInt = setInterval(() => {
     switch (++startGameIntCount) {
         case 0: {
-            gameOverText.textContent = "PUSH START!";
-            gameOverText.style.display = "block";
+            overlayText.textContent = "PUSH START!";
+            overlayText.style.display = "block";
             break;
         }
         case 1:
-            gameOverText.style.display = "none";
+            overlayText.style.display = "none";
             break;
         case 2: {
-            gameOverText.textContent = "PRESS ENTER!";
-            gameOverText.style.display = "block";
+            overlayText.textContent = "PRESS ENTER!";
+            overlayText.style.display = "block";
             break;
         }
         case 3:
-            gameOverText.style.display = "none";
+            overlayText.style.display = "none";
             startGameIntCount = -1;
             break;
     }
@@ -1108,15 +1112,34 @@ window.addEventListener("touchmove", (e) => {
         }
     }
 });
+function flashUIElem(elem, msDuration) {
+    elem.style.display = "none";
+    let i = 0;
+    const flashInt = setInterval(() => {
+        switch (++i) {
+            case 1:
+                elem.style.display = "block";
+                break;
+            case 2:
+                elem.style.display = "none";
+                i = 0;
+                break;
+        }
+    }, 300);
+    setTimeout(() => {
+        elem.style.display = "block";
+        clearInterval(flashInt);
+    }, msDuration);
+}
 function togglePause() {
     paused = !paused;
     if (paused) {
-        gameOverText.textContent = "PAUSED";
-        gameOverText.style.display = "block";
-        gameOverScreen.style.display = "block";
+        overlayText.textContent = "PAUSED";
+        overlayText.style.display = "block";
+        overlayScreen.style.display = "block";
     }
     else {
-        gameOverScreen.style.display = "none";
+        overlayScreen.style.display = "none";
     }
 }
 let startBtnPressed = false;
@@ -1178,6 +1201,7 @@ function levelWin() {
     }, 1500);
 }
 function setLevel(l) {
+    levelElem.textContent = l.toString();
     level = l;
     if (level === 1) {
         statePatterns = { CHASE: [420, 2040, 3540, 5040], SCATTER: [1620, 3240, 4740] };
@@ -1199,8 +1223,16 @@ function setGlobalState(state) {
     });
 }
 function addPoints(points) {
-    if (Math.floor(score / 10000) !== Math.floor((score + points) / 10000))
+    const pointBonus = 10000;
+    if (Math.floor(score / pointBonus) !== Math.floor((score + points) / pointBonus)) {
+        flashUIElem(scoreElem, 3000);
+        flashUIElem(scoreLabel, 3000);
         player.lives++;
+    }
+    if (score < highscore && score + points >= highscore) {
+        flashUIElem(highscoreElem, 3000);
+        flashUIElem(highscoreLabel, 3000);
+    }
     score += points;
     scoreElem.textContent = score.toString();
     if (score > highscore) {
@@ -1211,7 +1243,7 @@ function addPoints(points) {
 function resetGame() {
     if (startGameInt)
         clearInterval(startGameInt);
-    gameOverScreen.style.display = "none";
+    overlayScreen.style.display = "none";
     score = 0;
     player.lives = 3;
     scoreElem.textContent = score.toString();

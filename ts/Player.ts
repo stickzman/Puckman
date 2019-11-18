@@ -80,7 +80,7 @@ class Player {
     }
 
     setSpeed(speed: number) {
-        speed = Math.min(Math.max(0, speed), 1) // Clamp speed to a percentage
+        speed = Math.max(0, speed) // Clamp speed to a percentage
         this.pixPerFrame = speed * MAX_SPEED
     }
 
@@ -181,10 +181,10 @@ class Player {
                     if (--this.lives <= 0) {
                         running = false
                         setTimeout(() => {
-                            gameOverText.textContent = "GAME OVER"
-                            gameOverScreen.style.display = "block"
-                            gameOverText.style.display = "block"
-                            pollGamepadStart()
+                            overlayText.textContent = "GAME OVER"
+                            overlayScreen.style.display = "block"
+                            overlayText.style.display = "block"
+                            pollGamepadStart()														
                         }, 1666)
                     } else {
                         globalFrameHalt = 100

@@ -14,8 +14,11 @@ const c = canvas.getContext("2d")
 const body = document.querySelector("body")
 body.style.fontSize = TILE_SIZE + "px"
 const readyLabel = <HTMLElement>document.querySelector(".ready")
-const scoreElem = document.querySelector(".score")
-const highscoreElem = document.querySelector(".highscore")
+const levelElem = <HTMLElement>document.querySelector(".level")
+const scoreLabel = <HTMLElement>document.querySelector(".scoreLabel")
+const scoreElem = <HTMLElement>document.querySelector(".score")
+const highscoreLabel = <HTMLElement>document.querySelector(".highscoreLabel")
+const highscoreElem = <HTMLElement>document.querySelector(".highscore")
 try {
     highscoreElem.textContent = localStorage.getItem("highscore") || "0"
 } catch (e) {
@@ -54,23 +57,23 @@ function pollGamepadStart() {
     requestAnimationFrame(pollGamepadStart)
 }
 pollGamepadStart()
-const gameOverScreen = <HTMLElement>document.querySelector(".gameOverScreen")
-const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
+const overlayScreen = <HTMLElement>document.querySelector(".gameOverScreen")
+const overlayText = <HTMLElement>document.querySelector(".gameOverText")
 let startGameIntCount = 0
 const startGameInt = setInterval(() => {
     switch (++startGameIntCount) {
         case 0: {
-            gameOverText.textContent = "PUSH START!";
-            gameOverText.style.display = "block";
+            overlayText.textContent = "PUSH START!";
+            overlayText.style.display = "block";
             break;
         }
-        case 1: gameOverText.style.display = "none"; break;
+        case 1: overlayText.style.display = "none"; break;
         case 2: {
-            gameOverText.textContent = "PRESS ENTER!";
-            gameOverText.style.display = "block";
+            overlayText.textContent = "PRESS ENTER!";
+            overlayText.style.display = "block";
             break;
         }
-        case 3: gameOverText.style.display = "none"; startGameIntCount = -1; break;
+        case 3: overlayText.style.display = "none"; startGameIntCount = -1; break;
 
     }
 }, 1000)
@@ -133,14 +136,29 @@ window.addEventListener("touchmove", (e) => {
     }
 })
 
+function flashUIElem(elem: HTMLElement, msDuration: number) {
+		elem.style.display = "none";
+		let i = 0
+		const flashInt = setInterval(() => {
+				switch(++i) {
+						case 1: elem.style.display = "block"; break;
+						case 2: elem.style.display = "none"; i = 0; break;
+				}
+		}, 300)
+		setTimeout(() => {
+				elem.style.display = "block"
+				clearInterval(flashInt)
+		}, msDuration)
+}
+
 function togglePause() {
     paused = !paused
     if (paused) {
-        gameOverText.textContent = "PAUSED"
-        gameOverText.style.display = "block"
-        gameOverScreen.style.display = "block"
+        overlayText.textContent = "PAUSED"
+        overlayText.style.display = "block"
+        overlayScreen.style.display = "block"
     } else {
-        gameOverScreen.style.display = "none"
+        overlayScreen.style.display = "none"
     }
 }
 
@@ -198,6 +216,7 @@ function levelWin() {
 }
 
 function setLevel(l: number) {
+		levelElem.textContent = l.toString()
     level = l
     if (level === 1) {
         statePatterns = {CHASE: [420, 2040, 3540, 5040], SCATTER: [1620, 3240, 4740]}
@@ -218,7 +237,16 @@ function setGlobalState(state: STATE) {
 }
 
 function addPoints(points: number) {
-    if (Math.floor(score/10000) !== Math.floor((score+points)/10000)) player.lives++
+		const pointBonus = 10000
+    if (Math.floor(score/pointBonus) !== Math.floor((score+points)/pointBonus)) {
+				flashUIElem(scoreElem, 3000)
+				flashUIElem(scoreLabel, 3000)
+				player.lives++
+		}
+		if (score < highscore && score+points >= highscore) {
+				flashUIElem(highscoreElem, 3000)
+				flashUIElem(highscoreLabel, 3000)
+		}
     score += points
     scoreElem.textContent = score.toString()
     if (score > highscore) {
@@ -229,7 +257,7 @@ function addPoints(points: number) {
 
 function resetGame() {
     if (startGameInt) clearInterval(startGameInt)
-    gameOverScreen.style.display = "none"
+    overlayScreen.style.display = "none"
     score = 0
     player.lives = 3
     scoreElem.textContent = score.toString()
