@@ -255,13 +255,15 @@ function tick() {
     // Check Gamepad controls
     if (gamepadIndex > -1) updateGamepadControls(navigator.getGamepads()[gamepadIndex])
 
-    if (globalFrameHalt > 0) {
+    if (paused) {
+        // Do nothing if paused
+    } else if (globalFrameHalt > 0) {
         globalFrameHalt--
     } else if (resetReq) {
         resetAll()
         globalFrameHalt = 120
         draw()
-    } else if (!paused) {
+    } else {
         frameCount++
         if (statePatterns.CHASE.includes(frameCount)) setGlobalState(STATE.CHASE)
         else if (statePatterns.SCATTER.includes(frameCount)) setGlobalState(STATE.SCATTER)
