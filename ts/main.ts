@@ -6,39 +6,6 @@
 /// <reference path="Pinky.ts"/>
 /// <reference path="Inky.ts"/>
 /// <reference path="Clyde.ts"/>
-const gameOverScreen = <HTMLElement>document.querySelector(".gameOverScreen")
-const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
-function pollGamepadStart() {
-    if (running) return
-    if (gamepadIndex > -1) {
-        const gamepad = navigator.getGamepads()[gamepadIndex]
-        if (gamepad.buttons.some(b => b.pressed)) {
-            resetGame()
-            return
-        }
-    }
-    requestAnimationFrame(pollGamepadStart)
-}
-let startGameIntCount = 0
-const startGameInt = setInterval(() => {
-    pollGamepadStart()
-    switch (++startGameIntCount) {
-        case 0: {
-            gameOverText.textContent = "PUSH START!";
-            gameOverText.style.display = "block";
-            break;
-        }
-        case 1: gameOverText.style.display = "none"; break;
-        case 2: {
-            gameOverText.textContent = "PRESS ENTER!";
-            gameOverText.style.display = "block";
-            break;
-        }
-        case 3: gameOverText.style.display = "none"; startGameIntCount = -1; break;
-
-    }
-}, 1000)
-
 const canvas = <HTMLCanvasElement>document.getElementById("canvas")
 canvas.height = 36 * TILE_SIZE
 canvas.width = 28 * TILE_SIZE
@@ -74,9 +41,43 @@ const ghosts = [
     clyde = new Clyde()
 ]
 
+let gamepadIndex = -1
+function pollGamepadStart() {
+    if (running) return
+    if (gamepadIndex > -1) {
+        const gamepad = navigator.getGamepads()[gamepadIndex]
+        if (gamepad.buttons.some(b => b.pressed)) {
+            resetGame()
+            return
+        }
+    }
+    requestAnimationFrame(pollGamepadStart)
+}
+pollGamepadStart()
+const gameOverScreen = <HTMLElement>document.querySelector(".gameOverScreen")
+const gameOverText = <HTMLElement>document.querySelector(".gameOverText")
+let startGameIntCount = 0
+const startGameInt = setInterval(() => {
+    switch (++startGameIntCount) {
+        case 0: {
+            gameOverText.textContent = "PUSH START!";
+            gameOverText.style.display = "block";
+            break;
+        }
+        case 1: gameOverText.style.display = "none"; break;
+        case 2: {
+            gameOverText.textContent = "PRESS ENTER!";
+            gameOverText.style.display = "block";
+            break;
+        }
+        case 3: gameOverText.style.display = "none"; startGameIntCount = -1; break;
+
+    }
+}, 1000)
+
 window.addEventListener("keydown", (e) => {
     if (running) {
-        if (e.key === "Enter" || e.key === "Escape") paused = !paused
+        if (e.key === "Enter" || e.key === "Escape") togglePause()
         if (e.key === "w" || e.key === "ArrowUp") player.desiredDirection = dir.UP
         if (e.key === "a" || e.key === "ArrowLeft") player.desiredDirection = dir.LEFT
         if (e.key === "s" || e.key === "ArrowDown") player.desiredDirection = dir.DOWN
@@ -99,7 +100,6 @@ window.addEventListener("beforeunload", () => {
     }
 })
 
-let gamepadIndex = -1
 window.addEventListener("gamepadconnected", (e: GamepadEvent) => {
     gamepadIndex = e.gamepad.index
 })
@@ -133,8 +133,24 @@ window.addEventListener("touchmove", (e) => {
     }
 })
 
+function togglePause() {
+    paused = !paused
+    if (paused) {
+        gameOverText.textContent = "PAUSED"
+        gameOverText.style.display = "block"
+        gameOverScreen.style.display = "block"
+    } else {
+        gameOverScreen.style.display = "none"
+    }
+}
+
+let startBtnPressed = false
 function updateGamepadControls(gamepad: Gamepad) {
     const buttons = gamepad.buttons
+
+    if (!startBtnPressed && buttons[9].pressed) togglePause()
+    startBtnPressed = buttons[9].pressed
+
     if (buttons[12].pressed) player.desiredDirection = dir.UP
     else if (buttons[13].pressed) player.desiredDirection = dir.DOWN
     else if (buttons[14].pressed) player.desiredDirection = dir.LEFT
