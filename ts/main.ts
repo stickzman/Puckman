@@ -13,6 +13,7 @@ const c = canvas.getContext("2d")
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body")
 body.style.fontSize = TILE_SIZE + "px"
+const miniScore = <HTMLElement>document.querySelector(".miniScore")
 const readyLabel = <HTMLElement>document.querySelector(".ready")
 const levelElem = <HTMLElement>document.querySelector(".level")
 const scoreLabel = <HTMLElement>document.querySelector(".scoreLabel")
@@ -136,6 +137,16 @@ window.addEventListener("touchmove", (e) => {
     }
 })
 
+let miniScoreTimeout: number
+function setMiniScore(points: number, x: number, y: number) {
+		if (miniScoreTimeout !== undefined) clearTimeout(miniScoreTimeout)
+		miniScore.textContent = points.toString()
+		miniScore.style.top = (y/canvas.height*100+0.5).toString() + "%"
+		miniScore.style.left = (x/canvas.width*100).toString() + "%"
+		miniScore.style.display = "block"
+		miniScoreTimeout = setTimeout(() => miniScore.style.display = "none", 1500)
+}
+
 function flashUIElem(elem: HTMLElement, msDuration: number) {
 		elem.style.display = "none";
 		let i = 0
@@ -256,7 +267,7 @@ function addPoints(points: number) {
 }
 
 function resetGame() {
-    if (startGameInt) clearInterval(startGameInt)
+    if (startGameInt !== undefined) clearInterval(startGameInt)
     overlayScreen.style.display = "none"
     score = 0
     player.lives = 3

@@ -700,7 +700,8 @@ class Player {
     }
     update() {
         if (this.boostFrames > 0) {
-            if (--this.boostFrames <= 0) {
+            if (--this.boostFrames <= 0 || ghosts.every(g => g.state !== STATE.FRIGHTENED)) {
+                this.boostFrames = 0;
                 this.ghostsEaten = 0;
                 this.setSpeed(this.baseSpeed);
             }
@@ -794,7 +795,9 @@ class Player {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
-                    addPoints(Math.pow(2, ++this.ghostsEaten) * 100);
+                    const p = Math.pow(2, ++this.ghostsEaten) * 100;
+                    setMiniScore(p, g.x, g.y);
+                    addPoints(p);
                     globalFrameHalt = 60;
                     g.setState(STATE.EATEN);
                 }
@@ -980,6 +983,7 @@ const c = canvas.getContext("2d");
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body");
 body.style.fontSize = TILE_SIZE + "px";
+const miniScore = document.querySelector(".miniScore");
 const readyLabel = document.querySelector(".ready");
 const levelElem = document.querySelector(".level");
 const scoreLabel = document.querySelector(".scoreLabel");
@@ -1112,6 +1116,16 @@ window.addEventListener("touchmove", (e) => {
         }
     }
 });
+let miniScoreTimeout;
+function setMiniScore(points, x, y) {
+    if (miniScoreTimeout !== undefined)
+        clearTimeout(miniScoreTimeout);
+    miniScore.textContent = points.toString();
+    miniScore.style.top = (y / canvas.height * 100 + 0.5).toString() + "%";
+    miniScore.style.left = (x / canvas.width * 100).toString() + "%";
+    miniScore.style.display = "block";
+    miniScoreTimeout = setTimeout(() => miniScore.style.display = "none", 1500);
+}
 function flashUIElem(elem, msDuration) {
     elem.style.display = "none";
     let i = 0;
@@ -1241,7 +1255,7 @@ function addPoints(points) {
     }
 }
 function resetGame() {
-    if (startGameInt)
+    if (startGameInt !== undefined)
         clearInterval(startGameInt);
     overlayScreen.style.display = "none";
     score = 0;

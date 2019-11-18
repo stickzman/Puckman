@@ -86,7 +86,8 @@ class Player {
 
     update() {
         if (this.boostFrames > 0) {
-            if (--this.boostFrames <= 0) {
+            if (--this.boostFrames <= 0 || ghosts.every(g => g.state !== STATE.FRIGHTENED)) {
+								this.boostFrames = 0
                 this.ghostsEaten = 0
                 this.setSpeed(this.baseSpeed)
             }
@@ -174,7 +175,9 @@ class Player {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
-                    addPoints(Math.pow(2, ++this.ghostsEaten) * 100)
+										const p = Math.pow(2, ++this.ghostsEaten) * 100
+										setMiniScore(p, g.x, g.y)
+                    addPoints(p)
                     globalFrameHalt = 60
                     g.setState(STATE.EATEN)
                 } else if (g.active && !this.god) {
@@ -184,7 +187,7 @@ class Player {
                             overlayText.textContent = "GAME OVER"
                             overlayScreen.style.display = "block"
                             overlayText.style.display = "block"
-                            pollGamepadStart()														
+                            pollGamepadStart()
                         }, 1666)
                     } else {
                         globalFrameHalt = 100
