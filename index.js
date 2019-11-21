@@ -29,7 +29,7 @@ function shuffle(arr) {
 /// <reference path="helper.ts"/>
 class Ghost {
     constructor() {
-        this.allDirections = [0, 1, 2, 3];
+        this.debug = false;
         this.color = "brown";
         this.scatterX = 0;
         this.scatterY = 0;
@@ -37,19 +37,12 @@ class Ghost {
         this.homeY = 14;
         this.waitX = 13.5;
         this.waitY = 17;
-        this.dotCount = 0;
         this.frightenedFrames = 0;
         this.frightenedFlash = false;
         this.waitSpeed = 0.3 * MAX_SPEED;
-        this.debug = false;
         this.newLife = true;
         this.active = false;
         this.dotLimit = 0;
-        this.baseSpeed = 0.75;
-        this.frightenedSpeed = 0.5;
-        this.tunnelSpeed = 0.4;
-        this.x = 13.5 * TILE_SIZE;
-        this.y = 14 * TILE_SIZE;
         this.targetX = 0;
         this.targetY = 0;
     }
@@ -276,7 +269,7 @@ class Ghost {
         // Find opposite direction, as ghosts aren't allowed to turn around
         const oppDir = this.getOppositeDir(this.direction);
         // Find the distance to the target for all directions
-        const distances = this.allDirections.map((d) => {
+        const distances = Ghost.allDirections.map((d) => {
             if (d === oppDir || !this.directionPossible(d))
                 return Infinity;
             //Get the tile x, y
@@ -311,7 +304,7 @@ class Ghost {
     randomDir() {
         // Find opposite direction, as ghosts aren't allowed to turn around
         const oppDir = (this.direction < 2) ? this.direction + 2 : this.direction - 2;
-        const dirs = shuffle(this.allDirections);
+        const dirs = shuffle(Ghost.allDirections);
         for (let i = 0; i < dirs.length; i++) {
             if (dirs[i] === oppDir || !this.directionPossible(dirs[i]))
                 continue;
@@ -374,6 +367,7 @@ class Ghost {
         c.restore();
     }
 }
+Ghost.allDirections = [0, 1, 2, 3];
 Ghost.maxFrightenedFrames = 720;
 /// <reference path="Ghost.ts"/>
 class Blinky extends Ghost {
@@ -615,22 +609,15 @@ class Pinky extends Ghost {
 /// <reference path="helper.ts"/>
 class Player {
     constructor() {
+        this.debug = false;
+        this.god = false;
         this.color = "#ffff00";
         this.frameHalt = 0;
         this.dotLimit = 244;
-        this.debug = false;
-        this.god = false;
         this.lives = 3;
         this.direction = dir.RIGHT;
         this.desiredDirection = this.direction;
-        this.dotCount = 0;
-        this.elroy1Limit = 224;
-        this.elroy2Limit = 234;
-        this.dotTimer = 0;
         this.dotTimerLimit = 240;
-        this.ghostsEaten = 0;
-        this.baseSpeed = 0.8;
-        this.boostSpeed = 0.9;
         this.boostFrames = 0;
         this.reset();
     }
@@ -702,7 +689,6 @@ class Player {
         if (this.boostFrames > 0) {
             if (--this.boostFrames <= 0 || ghosts.every(g => g.state !== STATE.FRIGHTENED)) {
                 this.boostFrames = 0;
-                this.ghostsEaten = 0;
                 this.setSpeed(this.baseSpeed);
             }
             else
@@ -736,6 +722,7 @@ class Player {
                     // Big dot
                     addPoints(50);
                     this.frameHalt = 3;
+                    this.ghostsEaten = 0;
                     this.boostFrames = Ghost.maxFrightenedFrames;
                     ghosts.forEach((g) => g.setState(STATE.FRIGHTENED));
                 }
@@ -882,8 +869,7 @@ class Player {
 }
 /// <reference path="helper.ts"/>
 class TileMap {
-    constructor() {
-    }
+    constructor() { }
     static reset() {
         TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
         player.dotCount = 0;

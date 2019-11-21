@@ -1,23 +1,24 @@
 /// <reference path="helper.ts"/>
 class Player {
+    debug = false
+    god = false
+
     private color = "#ffff00"
     private frameHalt = 0
     private pixPerFrame: number
     private dotLimit = 244
 
-    debug = false
-    god = false
     lives = 3
     direction = dir.RIGHT
     desiredDirection = this.direction
-    dotCount = 0
-    elroy1Limit = 224
-    elroy2Limit = 234
-    dotTimer = 0
+    dotCount: number
+    elroy1Limit: number
+    elroy2Limit: number
+    dotTimer: number
     dotTimerLimit = 240
-    ghostsEaten = 0
-    baseSpeed = 0.8
-    boostSpeed = 0.9
+    ghostsEaten: number
+    baseSpeed: number
+    boostSpeed: number
     boostFrames = 0
     x: number
     y: number
@@ -87,8 +88,7 @@ class Player {
     update() {
         if (this.boostFrames > 0) {
             if (--this.boostFrames <= 0 || ghosts.every(g => g.state !== STATE.FRIGHTENED)) {
-								this.boostFrames = 0
-                this.ghostsEaten = 0
+				this.boostFrames = 0
                 this.setSpeed(this.baseSpeed)
             }
             else this.setSpeed(this.boostSpeed)
@@ -119,6 +119,7 @@ class Player {
                     // Big dot
                     addPoints(50)
                     this.frameHalt = 3
+                    this.ghostsEaten = 0
                     this.boostFrames = Ghost.maxFrightenedFrames
                     ghosts.forEach((g) => g.setState(STATE.FRIGHTENED))
                 }
@@ -175,8 +176,8 @@ class Player {
         ghosts.forEach((g) => {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
-										const p = Math.pow(2, ++this.ghostsEaten) * 100
-										setMiniScore(p, g.x, g.y)
+					const p = Math.pow(2, ++this.ghostsEaten) * 100
+					setMiniScore(p, g.x, g.y)
                     addPoints(p)
                     globalFrameHalt = 60
                     g.setState(STATE.EATEN)

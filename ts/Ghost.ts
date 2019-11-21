@@ -1,6 +1,9 @@
 /// <reference path="helper.ts"/>
 class Ghost {
-    protected readonly allDirections = [0, 1, 2, 3]
+    static readonly allDirections = [0, 1, 2, 3]
+    static maxFrightenedFrames = 720
+
+    debug = false
 
     protected color = "brown"
     protected scatterX = 0
@@ -9,23 +12,21 @@ class Ghost {
     protected homeY = 14
     protected waitX = 13.5
     protected waitY = 17
-    protected dotCount = 0
+    protected dotCount: number
     protected frightenedFrames = 0
     protected frightenedFlash = false
     protected waitSpeed = 0.3 * MAX_SPEED
     protected direction: dir
     protected pixPerFrame: number
 
-    static maxFrightenedFrames = 720
-    debug = false
     newLife = true
     active = false
     dotLimit = 0
-    baseSpeed = 0.75
-    frightenedSpeed = 0.5
-    tunnelSpeed = 0.4
-    x = 13.5 * TILE_SIZE
-    y = 14 * TILE_SIZE
+    baseSpeed: number
+    frightenedSpeed: number
+    tunnelSpeed: number
+    x: number
+    y: number
     targetX: number = 0
     targetY: number = 0
     tileX: number
@@ -238,7 +239,7 @@ class Ghost {
         // Find opposite direction, as ghosts aren't allowed to turn around
         const oppDir = this.getOppositeDir(this.direction)
         // Find the distance to the target for all directions
-        const distances = this.allDirections.map((d) => {
+        const distances = Ghost.allDirections.map((d) => {
             if (d === oppDir || !this.directionPossible(d)) return Infinity
             //Get the tile x, y
             let x: number, y: number
@@ -273,7 +274,7 @@ class Ghost {
     protected randomDir(): dir {
         // Find opposite direction, as ghosts aren't allowed to turn around
         const oppDir = (this.direction < 2) ? this.direction + 2 : this.direction - 2
-        const dirs = shuffle(this.allDirections)
+        const dirs = shuffle(Ghost.allDirections)
         for (let i = 0; i < dirs.length; i++) {
             if (dirs[i] === oppDir || !this.directionPossible(dirs[i])) continue;
             return dirs[i]
