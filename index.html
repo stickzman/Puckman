@@ -1,109 +1,128 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Puckman</title>
-        <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
-        <style media="screen">
-            body {
-                background: #000;
-                overflow: hidden;
-                margin: 0px;
-                text-align: center;
-                text-transform: uppercase;
-                user-select: none;
-                font-family: "Press Start 2P", monospace;
-            }
-            .container {
-                display: inline-block;
-                position: relative;
-                width: 77vh;
-                max-width: 100vw;
-                height: 100vh;
-                max-height: 128vw;
-            }
-            canvas {
-                width: 77vh;
-                max-width: 100vw;
-                height: 100vh;
-                max-height: 128vw;
-            }
-            .scoring {
-                position: absolute;
-                color: #fff;
-            }
-            .scoreLabel {
-							top: 1.5%;
-							left: 0px;
-							width: 31%;
-            }
-            .score {
-                top: 5%;
-						    left: 0px;
-						    width: 31%;
-            }
-            .highscoreLabel {
-                top: 1.5%;
-								left: 31%;
-						    width: 40%;
-            }
-            .highscore {
-                top: 5%;
-								left: 31%;
-						    width: 40%;
-            }
-						.levelLabel {
-								top: 1.5%;
-								right: 0px;
-								width: 25%;
-						}
-						.level {
-								top: 5%;
-								right: 0px;
-								width: 25%;
-						}
-            .ready {
-                display: none;
-                position: absolute;
-                color: #ffff00;
-                top: 56%;
-                left: 40%;
-            }
-            .gameOverScreen {
-                position: absolute;
-                background: #000;
-                width: 100%;
-                height: 100%;
-            }
-            .gameOverText {
-                top: 50%;
-                width: 100%;
-            }
-						.miniScore {
-								display: none;
-								color: #00ffff;
-								position: absolute;
-								font-family: sans-serif;
-								font-size: 0.5em;
-						}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="gameOverScreen">
-                <div class="scoring gameOverText">PUSH START!</div>
-            </div>
-						<div class="scoring scoreLabel">1UP</div>
-						<div class="scoring score">0</div>
-            <div class="scoring highscoreLabel">HIGH SCORE</div>
-            <div class="scoring highscore">0</div>
-						<div class="scoring levelLabel">LEVEL</div>
-						<div class="scoring level">1</div>
-            <div class="ready">READY!</div>
-						<div class="miniScore">0</div>
-            <canvas id="canvas" width="224" height="288"></canvas>
-        </div>
-        <script type="text/javascript" src="index.js"></script>
-    </body>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Puckman</title>
+	<link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
+	<style media="screen">
+		body {
+			background: #000;
+			overflow: hidden;
+			margin: 0px;
+			text-align: center;
+			text-transform: uppercase;
+			user-select: none;
+			font-family: "Press Start 2P", monospace;
+		}
+
+		.container {
+			display: inline-block;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 77vh;
+			max-width: 100vw;
+			height: 100vh;
+			max-height: 128vw;
+		}
+
+		canvas {
+			width: 77vh;
+			max-width: 100vw;
+			height: 100vh;
+			max-height: 128vw;
+		}
+
+		.scoring {
+			position: absolute;
+			color: #fff;
+		}
+
+		.scoreLabel {
+			top: 1.5%;
+			left: 0px;
+			width: 31%;
+		}
+
+		.score {
+			top: 5%;
+			left: 0px;
+			width: 31%;
+		}
+
+		.highscoreLabel {
+			top: 1.5%;
+			left: 31%;
+			width: 40%;
+		}
+
+		.highscore {
+			top: 5%;
+			left: 31%;
+			width: 40%;
+		}
+
+		.levelLabel {
+			top: 1.5%;
+			right: 0px;
+			width: 25%;
+		}
+
+		.level {
+			top: 5%;
+			right: 0px;
+			width: 25%;
+		}
+
+		.ready {
+			display: none;
+			position: absolute;
+			color: #ffff00;
+			top: 56%;
+			left: 40%;
+		}
+
+		.gameOverScreen {
+			position: absolute;
+			background: #000;
+			width: 100%;
+			height: 100%;
+		}
+
+		.gameOverText {
+			top: 50%;
+			width: 100%;
+		}
+
+		.miniScore {
+			display: none;
+			color: #00ffff;
+			position: absolute;
+			font-family: sans-serif;
+			font-size: 0.5em;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<div class="gameOverScreen">
+			<div class="scoring gameOverText">PUSH START!</div>
+		</div>
+		<div class="scoring scoreLabel">1UP</div>
+		<div class="scoring score">0</div>
+		<div class="scoring highscoreLabel">HIGH SCORE</div>
+		<div class="scoring highscore">0</div>
+		<div class="scoring levelLabel">LEVEL</div>
+		<div class="scoring level">1</div>
+		<div class="ready">READY!</div>
+		<div class="miniScore">0</div>
+		<canvas id="canvas" width="224" height="288"></canvas>
+	</div>
+	<script type="text/javascript" src="index.js"></script>
+</body>
+
 </html>
