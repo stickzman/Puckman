@@ -211,12 +211,11 @@ function updateGamepadControls(gamepad: Gamepad) {
         } else {
             player.desiredDirection = dir.DOWN
         }
-
     }
 }
 
 function levelWin() {
-    globalFrameHalt = 180
+    globalFrameHalt = Infinity // Pause game until flashing concludes
     setTimeout(() => {
         let i = 0
         const interval = setInterval(() => {
@@ -225,6 +224,7 @@ function levelWin() {
         setTimeout(() => {
             setLevel(level+1)
             clearInterval(interval)
+            globalFrameHalt = 0 // Resume game
         }, 1500)
     }, 1500)
 }
