@@ -1,4 +1,7 @@
+// Determine # of pixels per tile for game calculations
 const TILE_SIZE = Math.floor(Math.min(window.innerHeight / 36, window.innerWidth / 28));
+// Determine # of pixels per tile for drawing to the canvas
+let C_TILE_SIZE = TILE_SIZE;
 const MAX_SPEED = TILE_SIZE * 0.16;
 var dir;
 (function (dir) {
@@ -339,6 +342,8 @@ class Ghost {
         this.pixPerFrame = speed * MAX_SPEED;
     }
     draw(c) {
+        const x = this.x * (C_TILE_SIZE / TILE_SIZE);
+        const y = this.y * (C_TILE_SIZE / TILE_SIZE);
         c.save();
         switch (this.state) {
             case STATE.FRIGHTENED: {
@@ -357,12 +362,12 @@ class Ghost {
                 break;
             default: c.fillStyle = this.color;
         }
-        c.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
+        c.fillRect(x, y, C_TILE_SIZE, C_TILE_SIZE);
         if (this.debug) {
             c.strokeStyle = "red";
-            c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            c.strokeRect(this.tileX * C_TILE_SIZE, this.tileY * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE);
             c.strokeStyle = this.color;
-            c.strokeRect(this.targetX * TILE_SIZE, this.targetY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            c.strokeRect(this.targetX * C_TILE_SIZE, this.targetY * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE);
         }
         c.restore();
     }
@@ -783,7 +788,7 @@ class Player {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
                     const p = Math.pow(2, ++this.ghostsEaten) * 100;
-                    setMiniScore(p, g.x, g.y);
+                    setMiniScore(p, g.x * (C_TILE_SIZE / TILE_SIZE), g.y * (C_TILE_SIZE / TILE_SIZE));
                     addPoints(p);
                     globalFrameHalt = 60;
                     g.setState(STATE.EATEN);
@@ -849,20 +854,22 @@ class Player {
     }
     draw(c) {
         c.save();
+        const x = this.x * (C_TILE_SIZE / TILE_SIZE);
+        const y = this.y * (C_TILE_SIZE / TILE_SIZE);
         //Draw character
         c.fillStyle = this.color;
         c.beginPath();
-        c.arc(this.x + (TILE_SIZE / 2), this.y + (TILE_SIZE / 2), TILE_SIZE * 0.6, 0, Math.PI * 2);
+        c.arc(x + (C_TILE_SIZE / 2), y + (C_TILE_SIZE / 2), C_TILE_SIZE * 0.6, 0, Math.PI * 2);
         c.fill();
         //Draw lives
         for (let i = 0; i < this.lives; i++) {
             c.beginPath();
-            c.arc(2 * TILE_SIZE * (i + 1), 35 * TILE_SIZE, TILE_SIZE * 0.75, 0, Math.PI * 2);
+            c.arc(2 * C_TILE_SIZE * (i + 1), 35 * C_TILE_SIZE, C_TILE_SIZE * 0.75, 0, Math.PI * 2);
             c.fill();
         }
         if (this.debug) {
             c.strokeStyle = "red";
-            c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            c.strokeRect(this.tileX * C_TILE_SIZE, this.tileY * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE);
         }
         c.restore();
     }
@@ -895,18 +902,18 @@ class TileMap {
                 if (!tile)
                     return;
                 ctx.fillStyle = "black";
-                ctx.fillRect(tileI * TILE_SIZE, tileJ * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                ctx.fillRect(tileI * C_TILE_SIZE, tileJ * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE);
                 ctx.fillStyle = "rgb(255,200,200)";
                 if (tile === 2) {
                     // Dot special case
                     ctx.beginPath();
-                    ctx.arc(tileI * TILE_SIZE + (TILE_SIZE / 2), tileJ * TILE_SIZE + (TILE_SIZE / 2), TILE_SIZE / 5, 0, 2 * Math.PI);
+                    ctx.arc(tileI * C_TILE_SIZE + (C_TILE_SIZE / 2), tileJ * C_TILE_SIZE + (C_TILE_SIZE / 2), C_TILE_SIZE / 5, 0, 2 * Math.PI);
                     ctx.fill();
                 }
                 else if (tile === 3) {
                     ctx.fillStyle = (TileMap.flashDot) ? "rgb(255,200,200)" : "#000";
                     ctx.beginPath();
-                    ctx.arc(tileI * TILE_SIZE + (TILE_SIZE / 2), tileJ * TILE_SIZE + (TILE_SIZE / 2), TILE_SIZE * 0.4, 0, 2 * Math.PI);
+                    ctx.arc(tileI * C_TILE_SIZE + (C_TILE_SIZE / 2), tileJ * C_TILE_SIZE + (C_TILE_SIZE / 2), C_TILE_SIZE * 0.4, 0, 2 * Math.PI);
                     ctx.fill();
                 }
             });
@@ -963,8 +970,8 @@ TileMap.map = TileMap.INIT_MAP.map((row) => row.slice());
 /// <reference path="Inky.ts"/>
 /// <reference path="Clyde.ts"/>
 const canvas = document.getElementById("canvas");
-canvas.height = 36 * TILE_SIZE;
-canvas.width = 28 * TILE_SIZE;
+canvas.height = 36 * C_TILE_SIZE;
+canvas.width = 28 * C_TILE_SIZE;
 const c = canvas.getContext("2d");
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body");
@@ -1058,6 +1065,9 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("resize", () => {
     //Adjust UI font-size
     body.style.fontSize = (canvas.offsetHeight / 36) + "px";
+    C_TILE_SIZE = Math.floor(Math.min(window.innerHeight / 36, window.innerWidth / 28));
+    canvas.height = 36 * C_TILE_SIZE;
+    canvas.width = 28 * C_TILE_SIZE;
 });
 window.addEventListener("beforeunload", () => {
     try {
@@ -1301,12 +1311,12 @@ function draw(bkgColor = "rgb(0,0,150)") {
     TileMap.draw(c);
     //Draw UI Bars
     c.fillStyle = "#000";
-    c.fillRect(0, 0, 28 * TILE_SIZE, 3 * TILE_SIZE);
-    c.fillRect(0, 34 * TILE_SIZE, 28 * TILE_SIZE, 2 * TILE_SIZE);
+    c.fillRect(0, 0, 28 * C_TILE_SIZE, 3 * C_TILE_SIZE);
+    c.fillRect(0, 34 * C_TILE_SIZE, 28 * C_TILE_SIZE, 2 * C_TILE_SIZE);
     //Draw monster pen exit
-    c.fillRect(13.5 * TILE_SIZE, 15 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    c.fillRect(13.5 * C_TILE_SIZE, 15 * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE);
     c.fillStyle = "#e2cba9";
-    c.fillRect(13.5 * TILE_SIZE, 15.25 * TILE_SIZE, TILE_SIZE, TILE_SIZE / 2);
+    c.fillRect(13.5 * C_TILE_SIZE, 15.25 * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE / 2);
     player.draw(c);
     ghosts.forEach((g) => g.draw(c));
 }

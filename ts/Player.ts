@@ -177,7 +177,8 @@ class Player {
             if (this.tileX === g.tileX && this.tileY === g.tileY) {
                 if (g.state === STATE.FRIGHTENED) {
 					const p = Math.pow(2, ++this.ghostsEaten) * 100
-					setMiniScore(p, g.x, g.y)
+					setMiniScore(p, g.x * (C_TILE_SIZE / TILE_SIZE),
+                                    g.y * (C_TILE_SIZE / TILE_SIZE))
                     addPoints(p)
                     globalFrameHalt = 60
                     g.setState(STATE.EATEN)
@@ -238,22 +239,25 @@ class Player {
     draw(c: CanvasRenderingContext2D) {
         c.save()
 
+        const x = this.x * (C_TILE_SIZE / TILE_SIZE)
+        const y = this.y * (C_TILE_SIZE / TILE_SIZE)
+
         //Draw character
         c.fillStyle = this.color
         c.beginPath()
-        c.arc(this.x + (TILE_SIZE/2), this.y + (TILE_SIZE/2), TILE_SIZE*0.6, 0, Math.PI*2)
+        c.arc(x + (C_TILE_SIZE/2), y + (C_TILE_SIZE/2), C_TILE_SIZE*0.6, 0, Math.PI*2)
         c.fill()
 
         //Draw lives
         for (let i = 0; i < this.lives; i++) {
             c.beginPath()
-            c.arc(2*TILE_SIZE*(i+1), 35 * TILE_SIZE, TILE_SIZE*0.75, 0, Math.PI*2)
+            c.arc(2*C_TILE_SIZE*(i+1), 35 * C_TILE_SIZE, C_TILE_SIZE*0.75, 0, Math.PI*2)
             c.fill()
         }
 
         if (this.debug) {
             c.strokeStyle = "red"
-            c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+            c.strokeRect(this.tileX * C_TILE_SIZE, this.tileY * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE)
         }
         c.restore()
     }

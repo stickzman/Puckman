@@ -1,4 +1,7 @@
+// Determine # of pixels per tile for game calculations
 const TILE_SIZE = Math.floor(Math.min(window.innerHeight/36, window.innerWidth/28))
+// Determine # of pixels per tile for drawing to the canvas
+let C_TILE_SIZE = TILE_SIZE
 const MAX_SPEED = TILE_SIZE * 0.16
 enum dir {
     UP,

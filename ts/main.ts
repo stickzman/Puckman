@@ -7,8 +7,8 @@
 /// <reference path="Inky.ts"/>
 /// <reference path="Clyde.ts"/>
 const canvas = <HTMLCanvasElement>document.getElementById("canvas")
-canvas.height = 36 * TILE_SIZE
-canvas.width = 28 * TILE_SIZE
+canvas.height = 36 * C_TILE_SIZE
+canvas.width = 28 * C_TILE_SIZE
 const c = canvas.getContext("2d")
 //Adjust UI to TILE_SIZE
 const body = document.querySelector("body")
@@ -94,6 +94,9 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("resize", () => {
     //Adjust UI font-size
     body.style.fontSize = (canvas.offsetHeight/36) + "px"
+    C_TILE_SIZE = Math.floor(Math.min(window.innerHeight/36, window.innerWidth/28))
+    canvas.height = 36 * C_TILE_SIZE
+    canvas.width = 28 * C_TILE_SIZE
 })
 
 window.addEventListener("beforeunload", () => {
@@ -326,13 +329,13 @@ function draw(bkgColor = "rgb(0,0,150)") {
 
     //Draw UI Bars
     c.fillStyle = "#000"
-    c.fillRect(0, 0, 28*TILE_SIZE, 3*TILE_SIZE)
-    c.fillRect(0, 34*TILE_SIZE, 28*TILE_SIZE, 2*TILE_SIZE)
+    c.fillRect(0, 0, 28*C_TILE_SIZE, 3*C_TILE_SIZE)
+    c.fillRect(0, 34*C_TILE_SIZE, 28*C_TILE_SIZE, 2*C_TILE_SIZE)
 
     //Draw monster pen exit
-    c.fillRect(13.5*TILE_SIZE, 15*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    c.fillRect(13.5*C_TILE_SIZE, 15*C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE)
     c.fillStyle = "#e2cba9"
-    c.fillRect(13.5*TILE_SIZE, 15.25*TILE_SIZE, TILE_SIZE, TILE_SIZE/2)
+    c.fillRect(13.5*C_TILE_SIZE, 15.25*C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE/2)
 
     player.draw(c)
     ghosts.forEach((g) => g.draw(c))

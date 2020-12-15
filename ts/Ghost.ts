@@ -312,6 +312,9 @@ class Ghost {
     }
 
     draw(c: CanvasRenderingContext2D) {
+        const x = this.x * (C_TILE_SIZE / TILE_SIZE)
+        const y = this.y * (C_TILE_SIZE / TILE_SIZE)
+
         c.save()
         switch (this.state) {
             case STATE.FRIGHTENED: {
@@ -327,12 +330,12 @@ class Ghost {
             case STATE.EATEN: c.fillStyle = "rgba(0,0,255,0.5)"; break;
             default: c.fillStyle = this.color
         }
-        c.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE)
+        c.fillRect(x, y, C_TILE_SIZE, C_TILE_SIZE)
         if (this.debug) {
             c.strokeStyle = "red"
-            c.strokeRect(this.tileX * TILE_SIZE, this.tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+            c.strokeRect(this.tileX * C_TILE_SIZE, this.tileY * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE)
             c.strokeStyle = this.color
-            c.strokeRect(this.targetX * TILE_SIZE, this.targetY * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+            c.strokeRect(this.targetX * C_TILE_SIZE, this.targetY * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE)
         }
         c.restore()
     }

@@ -73,21 +73,21 @@ class TileMap {
                 if (!tile) return
 
                 ctx.fillStyle = "black"
-                ctx.fillRect(tileI * TILE_SIZE, tileJ * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                ctx.fillRect(tileI * C_TILE_SIZE, tileJ * C_TILE_SIZE, C_TILE_SIZE, C_TILE_SIZE)
                 ctx.fillStyle = "rgb(255,200,200)"
                 if (tile === 2) {
                     // Dot special case
                     ctx.beginPath()
-                    ctx.arc(tileI * TILE_SIZE + (TILE_SIZE/2),
-                            tileJ * TILE_SIZE + (TILE_SIZE/2),
-                            TILE_SIZE/5, 0, 2 * Math.PI)
+                    ctx.arc(tileI * C_TILE_SIZE + (C_TILE_SIZE/2),
+                            tileJ * C_TILE_SIZE + (C_TILE_SIZE/2),
+                            C_TILE_SIZE/5, 0, 2 * Math.PI)
                     ctx.fill()
                 } else if (tile === 3) {
                     ctx.fillStyle = (TileMap.flashDot) ? "rgb(255,200,200)" : "#000"
                     ctx.beginPath()
-                    ctx.arc(tileI * TILE_SIZE + (TILE_SIZE/2),
-                            tileJ * TILE_SIZE + (TILE_SIZE/2),
-                            TILE_SIZE*0.4, 0, 2 * Math.PI)
+                    ctx.arc(tileI * C_TILE_SIZE + (C_TILE_SIZE/2),
+                            tileJ * C_TILE_SIZE + (C_TILE_SIZE/2),
+                            C_TILE_SIZE*0.4, 0, 2 * Math.PI)
                     ctx.fill()
                 }
             })
