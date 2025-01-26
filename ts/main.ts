@@ -36,6 +36,9 @@ let globalFrameHalt = 0
 let paused = false
 let resetReq = true
 let running = false
+let lastTimestamp: number
+let deltaTime = 0;
+const frameTime = 1000/60
 const player = new Player()
 let blinky: Blinky, pinky: Pinky, inky: Inky, clyde: Clyde
 const ghosts = [
@@ -278,7 +281,8 @@ function resetGame() {
     setLevel(1)
     if (!running) {
         running = true
-        tick()
+		lastTimestamp = performance.now()
+		window.requestAnimationFrame(tick)
     }
 }
 
@@ -290,36 +294,47 @@ function resetAll() {
     ghosts.forEach((g) => g.reset())
     frameCount = 0
     resetReq = false
+	lastTimestamp = performance.now()
 }
 
-function tick() {
+function tick(timestamp: DOMHighResTimeStamp) {
     if (!running) return
-    // Check Gamepad controls
-    if (gamepadIndex > -1) updateGamepadControls(navigator.getGamepads()[gamepadIndex])
-
-    if (paused) {
-        // Do nothing if paused
-    } else if (globalFrameHalt > 0) {
-        globalFrameHalt--
-    } else if (resetReq) {
-        resetAll()
-        globalFrameHalt = 120
-        draw()
-    } else {
-        frameCount++
-        if (statePatterns.CHASE.includes(frameCount)) setGlobalState(STATE.CHASE)
-        else if (statePatterns.SCATTER.includes(frameCount)) setGlobalState(STATE.SCATTER)
-
-        player.update()
-        ghosts.forEach((g) => g.update())
-        if (!resetReq) {
-            // If the player didn't hit anything, check again
-            player.checkCollision()
-            draw()
-        }
-    }
+    
+	deltaTime += timestamp - lastTimestamp
+	lastTimestamp = timestamp
+	while (deltaTime >= frameTime) {
+		incFrame()
+		deltaTime -= frameTime
+	}
 
     window.requestAnimationFrame(tick)
+}
+
+function incFrame() {
+	// Check Gamepad controls
+	if (gamepadIndex > -1) updateGamepadControls(navigator.getGamepads()[gamepadIndex])
+
+	if (paused) {
+		// Do nothing if paused
+	} else if (globalFrameHalt > 0) {
+		globalFrameHalt--
+	} else if (resetReq) {
+		resetAll()
+		globalFrameHalt = 120
+		draw()
+	} else {
+		frameCount++
+		if (statePatterns.CHASE.includes(frameCount)) setGlobalState(STATE.CHASE)
+		else if (statePatterns.SCATTER.includes(frameCount)) setGlobalState(STATE.SCATTER)
+
+		player.update()
+		ghosts.forEach((g) => g.update())
+		if (!resetReq) {
+			// If the player didn't hit anything, check again
+			player.checkCollision()
+			draw()
+		}
+	}
 }
 
 function draw(bkgColor = "rgb(0,0,150)") {

@@ -999,6 +999,9 @@ let globalFrameHalt = 0;
 let paused = false;
 let resetReq = true;
 let running = false;
+let lastTimestamp;
+let deltaTime = 0;
+const frameTime = 1000 / 60;
 const player = new Player();
 let blinky, pinky, inky, clyde;
 const ghosts = [
@@ -1261,7 +1264,8 @@ function resetGame() {
     setLevel(1);
     if (!running) {
         running = true;
-        tick();
+        lastTimestamp = performance.now();
+        window.requestAnimationFrame(tick);
     }
 }
 function resetAll() {
@@ -1272,10 +1276,20 @@ function resetAll() {
     ghosts.forEach((g) => g.reset());
     frameCount = 0;
     resetReq = false;
+    lastTimestamp = performance.now();
 }
-function tick() {
+function tick(timestamp) {
     if (!running)
         return;
+    deltaTime += timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+    while (deltaTime >= frameTime) {
+        incFrame();
+        deltaTime -= frameTime;
+    }
+    window.requestAnimationFrame(tick);
+}
+function incFrame() {
     // Check Gamepad controls
     if (gamepadIndex > -1)
         updateGamepadControls(navigator.getGamepads()[gamepadIndex]);
@@ -1304,7 +1318,6 @@ function tick() {
             draw();
         }
     }
-    window.requestAnimationFrame(tick);
 }
 function draw(bkgColor = "rgb(0,0,150)") {
     c.fillStyle = bkgColor;
